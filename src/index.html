@@ -13,11 +13,41 @@
         <br>
         <div class="container-fluid">
             <div class="row">
-                <div class="col-3 text-center">
-                    <h3>Recipients</h3>
-                    <div id="recipients-list"></div>
+                <div class="col-3">
+                    <h3 style="text-align: center;">Recipients</h3>
+                    <div id="recipientsList"></div>
                     <br>
-                    <button type="button" class="btn btn-outline-dark" id="add-recipient">Add Recipient</button>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#addRecipientModal">Add Recipient</button>
+                    </div>
+                    <div class="modal fade" id="addRecipientModal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5>Add Recipient</h5>
+                                    <button type="button" class="close" data-dismiss="modal">
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="addRecipientForm">
+                                        <div class="form-group">
+                                            <label for="recipientName" style="text-align: left;">Name</label>
+                                            <input class="form-control" id="recipientName">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="recipientBudget" style="text-align: left;">Budget</label>
+                                            <input class="form-control" id="recipientBudget">
+                                        </div>
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-outline-dark">Submit</button>
+                                            <button type="button" class="btn btn-outline-dark" data-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-9">
                     <div class="row">
