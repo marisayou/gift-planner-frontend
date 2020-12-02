@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const recipientInfo = document.getElementById('recipient-info');
     let toBuyList;
     let boughtList;
-    let allRecipients; 
+    let firstRecipient; 
 
     const cartIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cart" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
@@ -37,9 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return fetch(recipientsURL)
         .then(res => res.json())
         .then(recipients => {
-            allRecipients = recipients;
             handleGetRecipients(recipients);
-            
         })
     }
 
@@ -47,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         recipients.forEach(recipient => addRecipientToList(recipient));
         
         if (recipients.length > 0) {
+            firstRecipient = recipients[0]
             renderListStructures();
         }
         else {
@@ -95,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         toBuyList = document.getElementById('to-buy-list');
         boughtList = document.getElementById('bought-list');
-        renderRecipient(allRecipients[0].id);
+        renderRecipient(firstRecipient.id);
     }
 
     // add recipient using modal form
@@ -129,8 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(res => res.json())
         .then(recipient => {
             addRecipientToList(recipient);
-            allRecipients.push(recipient);
-            if (allRecipients.length === 1) {
+            if (!firstRecipient) {
+                firstRecipient = recipient;
                 renderListStructures();
             }
             else {
@@ -140,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
     }
 
+    // add a new recipient from the form to the recipients list
     function addRecipientToList(recipient) {
         const recipientLi = document.createElement('li');
         recipientLi.id = `recipient-${recipient.id}`;
@@ -156,35 +156,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // render lists for a recipient
     function renderRecipient(recipientId) {
-        const recipient = allRecipients.find(r => r.id === recipientId);
-        const recipientName = document.getElementById('recipient-name');
-        recipientName.innerText = recipient.name;
+        fetch(recipientsURL + '/' + recipientId)
+        .then(res => res.json())
+        .then(recipient => {
+            const recipientName = document.getElementById('recipient-name');
+            recipientName.innerText = recipient.name;
 
-        const recipientBudget = document.getElementById('recipient-budget');
-        recipientBudget.innerText = `$${recipient.budget.toFixed(2)}`;
+            const recipientBudget = document.getElementById('recipient-budget');
+            recipientBudget.innerText = `$${recipient.budget.toFixed(2)}`;
 
-        toBuyList.innerHTML = '';
-        boughtList.innerHTML = '';
+            toBuyList.innerHTML = '';
+            boughtList.innerHTML = '';
 
-        const recipientItems = recipient.recipient_items;
-        let toBuyItems = [];
-        let boughtItems = [];
-        console.log(toBuyItems)
-        for (const item of recipientItems) {
-            if (item.bought) {
-                boughtItems.push(item);
+            const recipientItems = recipient.recipient_items;
+            let toBuyItems = [];
+            let boughtItems = [];
+
+            for (const item of recipientItems) {
+                if (item.bought) {
+                    boughtItems.push(item);
+                }
+                else {
+                    toBuyItems.push(item);
+                }
             }
-            else {
-                toBuyItems.push(item);
-            }
-        }
-        
-        renderListItems(toBuyList, toBuyItems);
-        console.log(toBuyItems)
-        renderListItems(boughtList, boughtItems);
+            
+            renderListItems(toBuyList, toBuyItems);
+            renderListItems(boughtList, boughtItems);
+        })
     }
 
+    // render list items for a recipient
     function renderListItems(ul, recipientItems) {
         const listType = ul.id;
         
@@ -192,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const li = document.createElement('li');
             li.className = 'list-group-item';
             li.id = recipientItems[i].id;
-            li.dataset.recipientId = recipientItems[i].recipient_id
 
             const itemRow = document.createElement('div');
             itemRow.className = 'row';
@@ -210,8 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const cartBtn = document.createElement('button');
                 cartBtn.className = 'btn icon-btn cart-btn';
                 cartBtn.innerHTML = cartIcon;
-
-                cartBtn.addEventListener('click', handleCartBtnClick);
+                cartBtn.addEventListener('click', handleItemBtnClick);
 
                 cartBtnCol.appendChild(cartBtn);
             }
@@ -222,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const removeBtn = document.createElement('button');
             removeBtn.className = 'btn icon-btn remove-btn';
             removeBtn.innerHTML = removeIcon;
-            removeBtn.addEventListener('click', handleRemoveBtnClick);
+            removeBtn.addEventListener('click', handleItemBtnClick);
             
             removeBtnCol.appendChild(removeBtn);
 
@@ -239,15 +241,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // handle button clicks for list items
-    function handleCartBtnClick(e) {
+    function handleItemBtnClick(e) {
         const btn = e.currentTarget;
-
+        const li = e.currentTarget.parentElement.parentElement.parentElement;
+        const id = li.id;
         if (btn.classList.contains('cart-btn')) {
-            const li = e.currentTarget.parentElement.parentElement.parentElement;
-            const id = li.id;
-            const recipientId = parseInt(li.dataset.recipientId);
             const priceStr = li.children[0].children[1].innerText;
             const price = parseFloat(priceStr.slice(1));
+
             const configObj = {
                 method: 'PATCH',
                 headers: {
@@ -263,13 +264,16 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(recipientItemsURL + '/' + id, configObj)
             .then(res => res.json())
             .then(() => {
-                getRecipients()
+                boughtLi = li.cloneNode(true);
+                boughtLi.children[0].children[2].remove();
+                boughtList.appendChild(boughtLi);
+                li.remove();
             });
         }
-    }
-
-    function handleRemoveBtnClick() {
-
+        else if (btn.classList.contains('remove-btn')) {
+            fetch(recipientItemsURL + '/' + id, { method: 'DELETE' })
+            .then(li.remove())
+        };
     }
 
 })
