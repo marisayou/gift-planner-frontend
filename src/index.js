@@ -1,13 +1,15 @@
-const recipientsURL = 'http://localhost:3000/recipients'
-const itemsURL = 'http://localhost:3000/items'
+const recipientsURL = 'http://localhost:3000/recipients';
+const itemsURL = 'http://localhost:3000/items';
+const recipientItemsURL = 'http://localhost:3000/recipient_items';
 
 document.addEventListener('DOMContentLoaded', function() {
     // consts
     const recipientsList = document.getElementById('recipientsList');
     const addRecipientModal = document.getElementById('addRecipientModal');
     const addRecipientForm = document.getElementById('addRecipientForm');
-    const toBuyList = document.getElementById('to-buy-list');
-    const boughtList = document.getElementById('bought-list');
+    const recipientInfo = document.getElementById('recipient-info');
+    let toBuyList;
+    let boughtList;
     let allRecipients; 
 
     const cartIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cart" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -31,15 +33,69 @@ document.addEventListener('DOMContentLoaded', function() {
     getRecipients();
 
     function getRecipients() {
+        recipientsList.innerHTML = '';
         return fetch(recipientsURL)
         .then(res => res.json())
         .then(recipients => {
-            recipients.forEach(recipient => addRecipientToList(recipient));
             allRecipients = recipients;
-            if (recipients.length > 0) {
-                renderRecipient(recipients[0]);
-            }
-        });
+            handleGetRecipients(recipients);
+            
+        })
+    }
+
+    function handleGetRecipients(recipients) {
+        recipients.forEach(recipient => addRecipientToList(recipient));
+        
+        if (recipients.length > 0) {
+            renderListStructures();
+        }
+        else {
+            const addRecipient = document.createElement('h1');
+            addRecipient.className = 'no-recipients';
+            addRecipient.innerText = 'Add a Recipient!';
+            recipientInfo.appendChild(addRecipient);
+        }
+    }
+
+    function renderListStructures() {
+        recipientInfo.innerHTML = `<div class="row">
+            <div class="col">
+                <h1 id="recipient-name" ></h1>
+            </div>
+            <div class="col text-right">
+                <h1 id="recipient-budget" ></h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" style="text-align: center;">To Buy</h5>
+                        <ul class="list-group" id="to-buy-list"></ul>
+                        <br>
+                        <div class="text-center">
+                            <button class="btn btn-outline-dark" id="add-to-buy-item">Add Item</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" style="text-align: center;">Bought</h5>
+                        <ul class="list-group" id="bought-list"></ul>
+                        <br>
+                        <div class="text-center">
+                            <button class="btn btn-outline-dark" id="add-bought-item">Add Item</button>
+                        </div
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        toBuyList = document.getElementById('to-buy-list');
+        boughtList = document.getElementById('bought-list');
+        renderRecipient(allRecipients[0].id);
     }
 
     // add recipient using modal form
@@ -74,10 +130,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(recipient => {
             addRecipientToList(recipient);
             allRecipients.push(recipient);
-            // if (allRecipients.length === 1) {
-            //     renderRecipient(recipient);
-            // }
-            renderRecipient(recipient);
+            if (allRecipients.length === 1) {
+                renderListStructures();
+            }
+            else {
+                renderRecipient(recipient.id);
+            }
         });
         
     }
@@ -88,21 +146,23 @@ document.addEventListener('DOMContentLoaded', function() {
         recipientLi.className = 'list-group-item';
         recipientLi.innerText = recipient.name;
         recipientsList.appendChild(recipientLi);
-        //renderRecipient(recipient);
     }
 
     // click on recipient to view his/her lists
     recipientsList.addEventListener('click', e => {
         if (e.target.tagName === 'LI') {
             const recipientId = parseInt(e.target.id.slice(10));
-            const recipient = allRecipients.find(r => r.id === recipientId);
-            renderRecipient(recipient);
+            renderRecipient(recipientId);
         }
     });
 
-    function renderRecipient(recipient) {
+    function renderRecipient(recipientId) {
+        const recipient = allRecipients.find(r => r.id === recipientId);
         const recipientName = document.getElementById('recipient-name');
         recipientName.innerText = recipient.name;
+
+        const recipientBudget = document.getElementById('recipient-budget');
+        recipientBudget.innerText = `$${recipient.budget.toFixed(2)}`;
 
         toBuyList.innerHTML = '';
         boughtList.innerHTML = '';
@@ -110,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const recipientItems = recipient.recipient_items;
         let toBuyItems = [];
         let boughtItems = [];
-        console.log(recipient);
+        console.log(toBuyItems)
         for (const item of recipientItems) {
             if (item.bought) {
                 boughtItems.push(item);
@@ -121,18 +181,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         renderListItems(toBuyList, toBuyItems);
+        console.log(toBuyItems)
         renderListItems(boughtList, boughtItems);
-
     }
 
     function renderListItems(ul, recipientItems) {
         const listType = ul.id;
-        console.log(ul)
         
         for (let i = 0; i < recipientItems.length; i++) {
             const li = document.createElement('li');
             li.className = 'list-group-item';
-            
+            li.id = recipientItems[i].id;
+            li.dataset.recipientId = recipientItems[i].recipient_id
+
             const itemRow = document.createElement('div');
             itemRow.className = 'row';
 
@@ -147,8 +208,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 cartBtnCol.className = 'col-1 icon-col';
 
                 const cartBtn = document.createElement('button');
-                cartBtn.className = 'btn icon-btn';
+                cartBtn.className = 'btn icon-btn cart-btn';
                 cartBtn.innerHTML = cartIcon;
+
+                cartBtn.addEventListener('click', handleCartBtnClick);
 
                 cartBtnCol.appendChild(cartBtn);
             }
@@ -157,8 +220,9 @@ document.addEventListener('DOMContentLoaded', function() {
             removeBtnCol.className = 'col-1 icon-col';
 
             const removeBtn = document.createElement('button');
-            removeBtn.className = 'btn icon-btn';
+            removeBtn.className = 'btn icon-btn remove-btn';
             removeBtn.innerHTML = removeIcon;
+            removeBtn.addEventListener('click', handleRemoveBtnClick);
             
             removeBtnCol.appendChild(removeBtn);
 
@@ -170,9 +234,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 itemRow.append(itemNameCol, itemPriceCol, cartBtnCol, removeBtnCol);
                 li.appendChild(itemRow);
                 ul.appendChild(li);
-
             });
         }
+    }
+
+    // handle button clicks for list items
+    function handleCartBtnClick(e) {
+        const btn = e.currentTarget;
+
+        if (btn.classList.contains('cart-btn')) {
+            const li = e.currentTarget.parentElement.parentElement.parentElement;
+            const id = li.id;
+            const recipientId = parseInt(li.dataset.recipientId);
+            const priceStr = li.children[0].children[1].innerText;
+            const price = parseFloat(priceStr.slice(1));
+            const configObj = {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    bought: true,
+                    price: price
+                })
+            };
+
+            fetch(recipientItemsURL + '/' + id, configObj)
+            .then(res => res.json())
+            .then(() => {
+                getRecipients()
+            });
+        }
+    }
+
+    function handleRemoveBtnClick() {
+
     }
 
 })
