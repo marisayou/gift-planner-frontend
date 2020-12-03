@@ -279,14 +279,19 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     // handle button clicks to move or remove list items
     function handleItemBtnClick(e) {
         const btn = e.currentTarget;
+        console.log(btn)
         const li = e.currentTarget.parentElement.parentElement.parentElement;
-        const id = li.id;
+        const recipientItemId = li.id;
+        const list = btn.parentElement.parentElement.parentElement.parentElement;
+        const recipientId = document.getElementById('recipient-name').dataset.id;
+        const price = parseFloat(li.children[0].children[1].innerText.slice(1));
+        console.log(li.children[0])
+        console.log(li.children[0].children[1])
+        console.log(li.children[0].children[1].innerText.slice(1))
 
         // move item from to-buy list to bought list
         if (btn.classList.contains('cart-btn')) {
-            const priceStr = li.children[0].children[1].innerText;
-            const price = parseFloat(priceStr.slice(1));
-
+            
             const configObj = {
                 method: 'PATCH',
                 headers: {
@@ -299,11 +304,12 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
                 })
             };
 
-            fetch(recipientItemsURL + '/' + id, configObj)
+            fetch(recipientItemsURL + '/' + recipientItemId, configObj)
             .then(res => res.json())
             .then(recipientItem => {
                 // remove list item from to-buy and add to bought list
                 boughtLi = li.cloneNode(true);
+                boughtLi.children[0].children[3].children[0].addEventListener('click', handleItemBtnClick)
                 boughtLi.children[0].children[2].remove();
                 boughtList.appendChild(boughtLi);
                 li.remove();
@@ -311,26 +317,42 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
                 // update budget
                 const recipientId = recipientItem.recipient_id;
                 const recipientItemPrice = recipientItem.price;
-                updateBudgetAfterBuyingItem(recipientId, recipientItemPrice)
+                updateBudgetFromRecipientItem(recipientId, recipientItemPrice, 'buy')
             });
         }
 
-        // remove item from either list
-        else if (btn.classList.contains('remove-btn')) {
-            fetch(recipientItemsURL + '/' + id, { method: 'DELETE' })
-            .then(li.remove())
-        };
+        // remove item from to-buy list
+        else if (btn.classList.contains('remove-btn') && list.id === 'to-buy-list') {
+            fetch(recipientItemsURL + '/' + recipientItemId, { method: 'DELETE' })
+            .then(li.remove());
+        }
+
+        // remove item from bought-list
+        else if (btn.classList.contains('remove-btn') && list.id === 'bought-list') {
+            fetch(recipientItemsURL + '/' + recipientItemId, { method: 'DELETE' })
+            .then(() => {
+                li.remove();
+                updateBudgetFromRecipientItem(recipientId, price, 'remove');
+            });
+        }
     }
 
-    function updateBudgetAfterBuyingItem(recipientId, price) {
+    function updateBudgetFromRecipientItem(recipientId, price, buyOrRemove) {
         const remainingBudget = document.getElementById('remaining-budget').children[0];
 
         //update total spent
         // const totalSpent = document.getElementById('total-spent');
         // totalSpent.innerText = parseFloat(totalSpent.innerText.slice(1))
-
+        
         const spent = document.getElementById('total-spent').children[0];
-        const newSpent = parseFloat(spent.innerText) + price;
+        let updateSpent;
+
+        if (buyOrRemove === 'buy') {
+            updateSpent = parseFloat(spent.innerText) + price;
+        }
+        else {
+            updateSpent = parseFloat(spent.innerText) - price
+        }
         
         const configObj = {
             method: 'PATCH',
@@ -338,7 +360,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ spent: newSpent })
+            body: JSON.stringify({ spent: updateSpent })
         };
 
         fetch(recipientsURL + '/' + recipientId, configObj)
