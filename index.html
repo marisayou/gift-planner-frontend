@@ -58,6 +58,34 @@
                 <div class="col-9" id="recipient-info">
                     
                 </div>
+                <div class="modal fade" id="updateRecipientModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5>Update Recipient</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="updateRecipientForm">
+                                    <div class="form-group">
+                                        <label for="recipientName" style="text-align: left;">Name</label>
+                                        <input class="form-control" id="updateRecipientName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="recipientBudget" style="text-align: left;">Budget</label>
+                                        <input class="form-control" id="updateRecipientBudget">
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-outline-dark">Submit</button>
+                                        <button type="button" class="btn btn-outline-dark" data-dismiss="modal">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- jQuery and Bootstrap bundle -->

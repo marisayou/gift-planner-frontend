@@ -29,6 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>
     </svg>`;
 
+    const updateForm = document.getElementById('updateRecipientForm');
+    updateForm.addEventListener('submit', (ev) => updateRecipient(ev, updateForm.dataset.id));
+
+
     // get recipients from db
     getRecipients();
 
@@ -86,12 +90,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         <br>
                         <div class="text-center">
                             <button class="btn btn-outline-dark" id="add-bought-item">Add Item</button>
-                        </div
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>`;
-
+        </div>
+        <br>
+        <br>
+        <div class="row">
+            <div class="col text-center" id="recipient-btns">
+                <button type="button" class="btn btn-outline-dark" id="update-recipient" data-toggle="modal" data-target="#updateRecipientModal">Update Recipient</button>           
+                <button class="btn btn-outline-dark" id="delete-recipient">Delete Recipient</button>
+            </div>
+            
+        </div>
+        `;
+        
         toBuyList = document.getElementById('to-buy-list');
         boughtList = document.getElementById('bought-list');
         renderRecipient(firstRecipient.id);
@@ -158,9 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // render lists for a recipient
     function renderRecipient(recipientId) {
+        updateForm.dataset.id = recipientId;
+
         fetch(recipientsURL + '/' + recipientId)
         .then(res => res.json())
         .then(recipient => {
+
             const recipientName = document.getElementById('recipient-name');
             recipientName.innerText = recipient.name;
 
@@ -185,6 +202,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             renderListItems(toBuyList, toBuyItems);
             renderListItems(boughtList, boughtItems);
+
+            const recipientBtns = document.getElementById('recipient-btns');
+            recipientBtns.addEventListener('click', (e) => handleRecipientBtnClick(e, recipient.name, recipient.budget))
         })
     }
 
@@ -224,6 +244,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const removeBtn = document.createElement('button');
             removeBtn.className = 'btn icon-btn remove-btn';
             removeBtn.innerHTML = removeIcon;
+            // removeBtn.onmouseenter = (e) => e.target.innerHTML = filledRemoveIcon;
+            // removeBtn.onmouseleave = (e) => e.target.innerHTML = removeIcon;
             removeBtn.addEventListener('click', handleItemBtnClick);
             
             removeBtnCol.appendChild(removeBtn);
@@ -274,6 +296,45 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(recipientItemsURL + '/' + id, { method: 'DELETE' })
             .then(li.remove())
         };
+    }
+
+    function handleRecipientBtnClick(e, name, budget) {
+        
+        if (e.target.id === 'update-recipient') {
+
+            const updateRecipientName = document.getElementById('updateRecipientName');
+            updateRecipientName.value = name;
+
+            const updateRecipientBudget = document.getElementById('updateRecipientBudget');
+            updateRecipientBudget.value = budget;
+
+        }
+    }
+
+
+    function updateRecipient(e, id) {
+        e.preventDefault();
+
+        const name = document.getElementById('updateRecipientName').value;
+        const budget = document.getElementById('updateRecipientBudget').value;
+
+        updateRecipientModal.querySelector('button.close').click();
+
+        const configObj = {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ name, budget })
+        };
+
+        fetch(recipientsURL + '/' + id, configObj)
+        .then(res => res.json())
+        .then(recipient => {
+            document.getElementById(`recipient-${id}`).innerText = recipient.name;
+            renderRecipient(recipient.id);
+        });
     }
 
 })
