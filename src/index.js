@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(recipient => {
 
             const recipientName = document.getElementById('recipient-name');
+            recipientName.dataset.id = recipient.id
             recipientName.innerText = recipient.name;
 
             const recipientBudget = document.getElementById('recipient-budget');
@@ -301,16 +302,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleRecipientBtnClick(e, name, budget) {
         
         if (e.target.id === 'update-recipient') {
-
             const updateRecipientName = document.getElementById('updateRecipientName');
             updateRecipientName.value = name;
 
             const updateRecipientBudget = document.getElementById('updateRecipientBudget');
             updateRecipientBudget.value = budget;
-
+        }
+        else if (e.target.id === 'delete-recipient') {
+            deleteRecipient()
         }
     }
-
 
     function updateRecipient(e, id) {
         e.preventDefault();
@@ -337,4 +338,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function deleteRecipient() {
+        const recipientId = document.getElementById('recipient-name').dataset.id
+
+        fetch(recipientsURL + '/' + recipientId, { method: 'DELETE' })
+        .then(location.reload());
+    }
 })
