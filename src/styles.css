@@ -16,3 +16,24 @@
     vertical-align: middle;
     margin-bottom: 5px;
 }
+
+.currency-sign {
+    margin-top: 1px;
+}
+
+.currency-input {
+    border: none;
+    width: 97%;
+    
+}
+
+input:focus {
+    outline: none;
+    outline-width: 0;
+    box-shadow: 0 0 0 30px white inset !important;
+}
+
+input:-webkit-autofill {
+    box-shadow: 0 0 0 30px white inset !important;
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}

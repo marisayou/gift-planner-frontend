@@ -389,6 +389,8 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
             // update info on page
             document.getElementById(`recipient-${id}`).innerText = recipient.name;
             document.getElementById('recipient-name').innerText = recipient.name;
+            document.getElementById('recipient-budget').children[0].innerText = recipient.budget.toFixed(2);
+            document.getElementById('remaining-budget').children[0].innerText = (recipient.budget - recipient.spent).toFixed(2);
         });
     }
 

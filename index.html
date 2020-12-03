@@ -43,7 +43,10 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="recipientBudget" style="text-align: left;">Budget</label>
-                                            <input class="form-control" id="recipientBudget">
+                                            <div class="input-group form-control">
+                                                <span class="currency-sign">$</span>
+                                                <input class="currency-input" id="recipientBudget">
+                                            </div>
                                         </div>
                                         <div class="text-center">
                                             <button type="submit" class="btn btn-outline-dark">Submit</button>
@@ -55,9 +58,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-9" id="recipient-info">
-                    
-                </div>
+
+                <!-- add functionality in this div -->
+                <div class="col-9" id="recipient-info"></div>
+
+                <!-- modal form for updating recipient info -->
                 <div class="modal fade" id="updateRecipientModal">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -75,7 +80,10 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="recipientBudget" style="text-align: left;">Budget</label>
-                                        <input class="form-control" id="updateRecipientBudget">
+                                        <div class="input-group form-control">
+                                            <span class="currency-sign">$</span>
+                                            <input class="currency-input" id="updateRecipientBudget">
+                                        </div>
                                     </div>
                                     <div class="text-center">
                                         <button type="submit" class="btn btn-outline-dark">Submit</button>
@@ -86,6 +94,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
         <!-- jQuery and Bootstrap bundle -->
