@@ -1,17 +1,20 @@
+// URLs
 const recipientsURL = 'http://localhost:3000/recipients';
 const itemsURL = 'http://localhost:3000/items';
 const recipientItemsURL = 'http://localhost:3000/recipient_items';
 
-document.addEventListener('DOMContentLoaded', function() {
     // consts
     const recipientsList = document.getElementById('recipientsList');
     const addRecipientModal = document.getElementById('addRecipientModal');
     const addRecipientForm = document.getElementById('addRecipientForm');
     const recipientInfo = document.getElementById('recipient-info');
+
+    // global variables
     let toBuyList;
     let boughtList;
     let firstRecipient; 
 
+    // icons for buttons
     const cartIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cart" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
     </svg>`;
@@ -29,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>
     </svg>`;
 
+    // event handler for updating recipient info
     const updateForm = document.getElementById('updateRecipientForm');
     updateForm.addEventListener('submit', (ev) => updateRecipient(ev, updateForm.dataset.id));
 
@@ -66,7 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <h1 id="recipient-name" ></h1>
             </div>
             <div class="col text-right">
-                <h1 id="recipient-budget" ></h1>
+                <h1 id="recipient-budget">$<span></span></h1>
+                <h4 id="remaining-budget">Remaining: $<span></span></h4>
             </div>
         </div>
         <div class="row">
@@ -88,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h5 class="card-title" style="text-align: center;">Bought</h5>
                         <ul class="list-group" id="bought-list"></ul>
                         <br>
+                        <p id="total-spent" style="text-align: center;">Total Spent: $<span></span><p>
                         <div class="text-center">
                             <button class="btn btn-outline-dark" id="add-bought-item">Add Item</button>
                         </div>
@@ -136,11 +142,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({name, budget})
+            body: JSON.stringify({ name, budget })
         };
         fetch(recipientsURL, configObj)
         .then(res => res.json())
         .then(recipient => {
+            console.log(recipient);
             addRecipientToList(recipient);
             if (!firstRecipient) {
                 firstRecipient = recipient;
@@ -182,8 +189,14 @@ document.addEventListener('DOMContentLoaded', function() {
             recipientName.dataset.id = recipient.id
             recipientName.innerText = recipient.name;
 
-            const recipientBudget = document.getElementById('recipient-budget');
-            recipientBudget.innerText = `$${recipient.budget.toFixed(2)}`;
+            const recipientBudget = document.getElementById('recipient-budget').children[0];
+            recipientBudget.innerText = recipient.budget.toFixed(2);
+
+            const remainingBudget = document.getElementById('remaining-budget').children[0];
+            remainingBudget.innerText = parseFloat(recipient.budget - recipient.spent).toFixed(2);
+
+            const amtSpent = document.getElementById('total-spent').children[0];
+            amtSpent.innerText = `${recipient.spent.toFixed(2)}`;
 
             toBuyList.innerHTML = '';
             boughtList.innerHTML = '';
@@ -263,11 +276,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // handle button clicks for list items
+    // handle button clicks to move or remove list items
     function handleItemBtnClick(e) {
         const btn = e.currentTarget;
         const li = e.currentTarget.parentElement.parentElement.parentElement;
         const id = li.id;
+
+        // move item from to-buy list to bought list
         if (btn.classList.contains('cart-btn')) {
             const priceStr = li.children[0].children[1].innerText;
             const price = parseFloat(priceStr.slice(1));
@@ -286,19 +301,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
             fetch(recipientItemsURL + '/' + id, configObj)
             .then(res => res.json())
-            .then(() => {
+            .then(recipientItem => {
+                // remove list item from to-buy and add to bought list
                 boughtLi = li.cloneNode(true);
                 boughtLi.children[0].children[2].remove();
                 boughtList.appendChild(boughtLi);
                 li.remove();
+
+                // update budget
+                const recipientId = recipientItem.recipient_id;
+                const recipientItemPrice = recipientItem.price;
+                updateBudgetAfterBuyingItem(recipientId, recipientItemPrice)
             });
         }
+
+        // remove item from either list
         else if (btn.classList.contains('remove-btn')) {
             fetch(recipientItemsURL + '/' + id, { method: 'DELETE' })
             .then(li.remove())
         };
     }
 
+    function updateBudgetAfterBuyingItem(recipientId, price) {
+        const remainingBudget = document.getElementById('remaining-budget').children[0];
+
+        //update total spent
+        // const totalSpent = document.getElementById('total-spent');
+        // totalSpent.innerText = parseFloat(totalSpent.innerText.slice(1))
+
+        const spent = document.getElementById('total-spent').children[0];
+        const newSpent = parseFloat(spent.innerText) + price;
+        
+        const configObj = {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ spent: newSpent })
+        };
+
+        fetch(recipientsURL + '/' + recipientId, configObj)
+        .then(res => res.json())
+        .then(recipient => { 
+            spent.innerText = recipient.spent.toFixed(2);
+            remainingBudget.innerText = parseFloat(recipient.budget - recipient.spent).toFixed(2);
+        });
+    }
+
+    // handle click of buttons to update or delete recipients
     function handleRecipientBtnClick(e, name, budget) {
         
         if (e.target.id === 'update-recipient') {
@@ -309,16 +360,18 @@ document.addEventListener('DOMContentLoaded', function() {
             updateRecipientBudget.value = budget;
         }
         else if (e.target.id === 'delete-recipient') {
-            deleteRecipient()
+            deleteRecipient();
         }
     }
 
+    // update recipient info
     function updateRecipient(e, id) {
         e.preventDefault();
 
         const name = document.getElementById('updateRecipientName').value;
         const budget = document.getElementById('updateRecipientBudget').value;
 
+        // close modal form
         updateRecipientModal.querySelector('button.close').click();
 
         const configObj = {
@@ -333,15 +386,16 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(recipientsURL + '/' + id, configObj)
         .then(res => res.json())
         .then(recipient => {
+            // update info on page
             document.getElementById(`recipient-${id}`).innerText = recipient.name;
-            renderRecipient(recipient.id);
+            document.getElementById('recipient-name').innerText = recipient.name;
         });
     }
 
+    // delete a recipient and his/her recipient items
     function deleteRecipient() {
-        const recipientId = document.getElementById('recipient-name').dataset.id
+        const recipientId = document.getElementById('recipient-name').dataset.id;
 
         fetch(recipientsURL + '/' + recipientId, { method: 'DELETE' })
         .then(location.reload());
     }
-})
