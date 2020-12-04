@@ -1,3 +1,4 @@
+
 // URLs
 const recipientsURL = 'http://localhost:3000/recipients';
 const itemsURL = 'http://localhost:3000/items';
@@ -59,8 +60,11 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
 
     // event handler for updating recipient info
     const updateForm = document.getElementById('updateRecipientForm');
-    updateForm.addEventListener('submit', (ev) => updateRecipient(ev, updateForm.dataset.id));
+    updateForm.addEventListener('submit', (e) => updateRecipient(e, updateForm.dataset.id));
 
+    // event handler for deleting recipient info
+    const confirmDeleteRecipient = document.getElementById('confirm-delete-recipient');
+    confirmDeleteRecipient.addEventListener('click', deleteRecipient);
 
     // get recipients from db
     getRecipients();
@@ -128,7 +132,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
         <div class="row">
             <div class="col text-center" id="recipient-btns">
                 <button type="button" class="btn btn-outline-dark" id="update-recipient" data-toggle="modal" data-target="#updateRecipientModal">Update Recipient</button>           
-                <button class="btn btn-outline-dark" id="delete-recipient">Delete Recipient</button>
+                <button class="btn btn-outline-dark" id="delete-recipient" data-toggle="modal" data-target="#deleteRecipientModal">Delete Recipient</button>
             </div>
         </div>`;
         
@@ -188,12 +192,13 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
 
         const searchTerm = e.target.search.value;
         
-        let items = findProducts(searchTerm);
+        //let items = findProducts(searchTerm);
+        
     }
 
-    function findProducts(searchTerm) {
+    // function findProducts(searchTerm) {
 
-    }
+    // }
 
     // add recipient using modal form
     addRecipientForm.addEventListener('submit', addRecipient);
@@ -279,8 +284,8 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
             const amtSpent = document.getElementById('total-spent').children[0];
             amtSpent.innerText = `${recipient.spent.toFixed(2)}`;
 
-            const recipientBtns = document.getElementById('recipient-btns');
-            recipientBtns.addEventListener('click', (e) => handleRecipientBtnClick(e))
+            const updateRecipientBtn = document.getElementById('update-recipient');
+            updateRecipientBtn.addEventListener('click', (e) => updateRecipientBtnClick(e))
 
             return recipient.recipient_items
         })
@@ -519,7 +524,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     }
 
     // handle click of buttons to update or delete recipients
-    function handleRecipientBtnClick(e) {
+    function updateRecipientBtnClick(e) {
         
         if (e.target.id === 'update-recipient') {
             const updateRecipientName = document.getElementById('updateRecipientName');
@@ -527,9 +532,6 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
 
             const updateRecipientBudget = document.getElementById('updateRecipientBudget');
             updateRecipientBudget.value = document.getElementById('recipient-budget').innerText.slice(1);
-        }
-        else if (e.target.id === 'delete-recipient') {
-            deleteRecipient();
         }
     }
 
@@ -565,6 +567,9 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
 
     // delete a recipient and his/her recipient items
     function deleteRecipient() {
+        // close modal
+        document.getElementById('cancel-delete-recipient').click();
+
         const recipientId = document.getElementById('recipient-name').dataset.id;
 
         fetch(recipientsURL + '/' + recipientId, { method: 'DELETE' })

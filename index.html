@@ -95,12 +95,35 @@
                     </div>
                 </div>
 
+                <!-- deleting confirmation modal -->
+                <div class="modal fade" id="deleteRecipientModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 style="margin: auto;">Warning!!!</h5>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete this recipient? This recipient's information cannot be recovered after being deleted.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <div class="text-center" style="margin: auto;">
+                                    <button type="button" class="btn btn-outline-dark" id="confirm-delete-recipient">Delete</button>
+                                    <button type="button" class="btn btn-outline-dark" id="cancel-delete-recipient" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
         <!-- jQuery and Bootstrap bundle -->
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
-
+        
+        <!-- requireJS -->
+        <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+        
         <script src="./src/index.js"></script>
     </body>
 </html>
