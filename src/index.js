@@ -89,7 +89,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     function renderListStructures(recipientId=null) {
         recipientInfo.innerHTML = `<div class="row">
             <div class="col">
-                <h1 id="recipient-name" ></h1>
+                <h1 id="recipient-name"></h1>
             </div>
             <div class="col text-right">
                 <h1 id="recipient-budget">$<span></span></h1>
@@ -241,8 +241,8 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     // add a new recipient from the form to the recipients list
     function addRecipientToList(recipient) {
         const recipientLi = document.createElement('li');
-        //recipientLi.id = `recipient-${recipient.id}`;
-        recipientLi.dataset.id = recipient.id;
+        recipientLi.id = `recipient-${recipient.id}`;
+        //recipientLi.dataset.id = recipient.id;
         recipientLi.dataset.budget = recipient.budget;
         recipientLi.dataset.spent = recipient.spent
         recipientLi.className = 'list-group-item';
@@ -253,7 +253,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     // click on recipient to view his/her lists
     recipientsList.addEventListener('click', e => {
         if (e.target.tagName === 'LI') {
-            const recipientId = parseInt(e.target.dataset.id);
+            const recipientId = parseInt(e.target.id.slice(10));
             renderListStructures(recipientId);
         }
     });
@@ -280,7 +280,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
             amtSpent.innerText = `${recipient.spent.toFixed(2)}`;
 
             const recipientBtns = document.getElementById('recipient-btns');
-            recipientBtns.addEventListener('click', (e) => handleRecipientBtnClick(e, recipient.name, recipient.budget))
+            recipientBtns.addEventListener('click', (e) => handleRecipientBtnClick(e))
 
             return recipient.recipient_items
         })
@@ -519,14 +519,14 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     }
 
     // handle click of buttons to update or delete recipients
-    function handleRecipientBtnClick(e, name, budget) {
+    function handleRecipientBtnClick(e) {
         
         if (e.target.id === 'update-recipient') {
             const updateRecipientName = document.getElementById('updateRecipientName');
-            updateRecipientName.value = name;
+            updateRecipientName.value = document.getElementById('recipient-name').innerText;
 
             const updateRecipientBudget = document.getElementById('updateRecipientBudget');
-            updateRecipientBudget.value = budget;
+            updateRecipientBudget.value = document.getElementById('recipient-budget').innerText.slice(1);
         }
         else if (e.target.id === 'delete-recipient') {
             deleteRecipient();
