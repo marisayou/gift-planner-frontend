@@ -285,96 +285,166 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
             amtSpent.innerText = `${recipient.spent.toFixed(2)}`;
 
             const updateRecipientBtn = document.getElementById('update-recipient');
-            updateRecipientBtn.addEventListener('click', (e) => updateRecipientBtnClick(e))
+            updateRecipientBtn.addEventListener('click', updateRecipientBtnClick);
 
-            return recipient.recipient_items
+            renderListItems(recipient.id);
+            // return recipient.recipient_items
         })
-        .then(recipientItems => {
-            toBuyList.innerHTML = '';
-            boughtList.innerHTML = '';
+        // .then(recipientItems => {
+        //     toBuyList.innerHTML = '';
+        //     boughtList.innerHTML = '';
 
-            let toBuyItems = [];
-            let boughtItems = [];
+        //     let toBuyItems = [];
+        //     let boughtItems = [];
 
-            for (const item of recipientItems) {
-                if (item.bought) {
-                    boughtItems.push(item);
-                }
-                else {
-                    toBuyItems.push(item);
-                }
-            }
+        //     for (const item of recipientItems) {
+        //         if (item.bought) {
+        //             boughtItems.push(item);
+        //         }
+        //         else {
+        //             toBuyItems.push(item);
+        //         }
+        //     }
 
-            renderListItems(boughtList, boughtItems);
-            renderListItems(toBuyList, toBuyItems);
-        });
+        //     renderListItems(boughtList, boughtItems);
+        //     renderListItems(toBuyList, toBuyItems);
+        // });
     }
 
     // render list items for a recipient
-    function renderListItems(ul, recipientItems) {
-        const listType = ul.id;
-        
-        for (let i = 0; i < recipientItems.length; i++) {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.id = recipientItems[i].id;
 
-            const itemRow = document.createElement('div');
-            itemRow.className = 'row';
+    function renderListItems(recipientId) {
+        fetch(recipientsURL + `/${recipientId}/recipient_items`)
+        .then(res => res.json())
+        .then(recipientItems => {
+            for (const recipientItem of recipientItems) {
+                console.log('hi')
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.id = recipientItem.id;
 
-            const itemNameCol = document.createElement('div');
-            itemNameCol.className = 'col list-item'; 
+                const itemRow = document.createElement('div');
+                itemRow.className = 'row';
 
-            const itemPriceCol = document.createElement('div');
-            itemPriceCol.className = 'col-3 list-item';
+                // item name
+                const itemNameCol = document.createElement('div');
+                itemNameCol.className = 'col-6 item-name';
+                itemNameCol.innerText = recipientItem.item.name;
 
-            const linkBtnCol = document.createElement('div');
-            linkBtnCol.className = 'col-1 icon-col';
+                // item price
+                const itemPriceCol = document.createElement('div');
+                itemPriceCol.className = 'col-3 item-price';
+                itemPriceCol.innerText = `$${recipientItem.item.price.toFixed(2)}`; // span
 
-            const linkBtn = document.createElement('button');
-            linkBtn.className = 'btn icon-btn link-btn';
-            linkBtn.innerHTML = linkIcon;
-            linkBtn.addEventListener('click', handleItemBtnClick);
-            linkBtnCol.appendChild(linkBtn);
+                // link button
+                const linkBtnCol = document.createElement('div');
+                linkBtnCol.className = 'col-1 icon-col';
+                const linkBtn = document.createElement('button');
+                linkBtn.className = 'btn icon-btn link-btn';
+                linkBtn.innerHTML = linkIcon;
+                linkBtn.addEventListener('click', handleItemBtnClick);
+                linkBtnCol.appendChild(linkBtn);
 
-            const cartBtnCol = document.createElement('div');
-            cartBtnCol.className = 'col-1 icon-col';
-            const cartBtn = document.createElement('button');
-            if (listType === 'to-buy-list') {
-                cartBtn.className = 'btn icon-btn fill-cart-btn';
-                cartBtn.innerHTML = cartIcon;
-            }
-            else {
-                cartBtn.className = 'btn icon-btn empty-cart-btn';
-                cartBtn.innerHTML = emptyCartIcon;
-            }
+                // cart button
+                const cartBtnCol = document.createElement('div');
+                cartBtnCol.className = 'col-1 icon-col';
+                const cartBtn = document.createElement('button');
+                if (recipientItem.bought) {
+                    cartBtn.className = 'btn icon-btn cart-btn empty-cart-btn';
+                    cartBtn.innerHTML = emptyCartIcon;
+                }
+                else {
+                    cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
+                    cartBtn.innerHTML = cartIcon;
+                }
+                cartBtn.addEventListener('click', handleItemBtnClick);
+                cartBtnCol.appendChild(cartBtn);
 
-            cartBtn.addEventListener('click', handleItemBtnClick);
-            cartBtnCol.appendChild(cartBtn);
+                // remove item button
+                const removeBtnCol = document.createElement('div');
+                removeBtnCol.className = 'col-1 icon-col';
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn icon-btn remove-btn';
+                removeBtn.innerHTML = removeIcon;
+                removeBtn.addEventListener('click', handleItemBtnClick);
+                removeBtnCol.appendChild(removeBtn);
 
-            const removeBtnCol = document.createElement('div');
-            removeBtnCol.className = 'col-1 icon-col';
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'btn icon-btn remove-btn';
-            removeBtn.innerHTML = removeIcon;
-            // removeBtn.onmouseenter = (e) => e.target.innerHTML = filledRemoveIcon;
-            // removeBtn.onmouseleave = (e) => e.target.innerHTML = removeIcon;
-            removeBtn.addEventListener('click', handleItemBtnClick);
-            
-            removeBtnCol.appendChild(removeBtn);
-
-            fetch(itemsURL + '/' + recipientItems[i].item_id)
-            .then(res => res.json())
-            .then(item => {
-                itemNameCol.innerText = item.name;
-                itemPriceCol.innerText = `$${item.price.toFixed(2)}`;
                 itemRow.append(itemNameCol, itemPriceCol, linkBtnCol, cartBtnCol, removeBtnCol);
                 li.appendChild(itemRow);
-                ul.appendChild(li);
-            });
-        }
+
+                if (recipientItem.bought) {
+                    boughtList.appendChild(li);
+                }
+                else {
+                    toBuyList.appendChild(li);
+                }
+            }
+        })
     }
+    // function renderListItems(ul, recipientItems) {
+    //     const listType = ul.id;
+        
+    //     for (let i = 0; i < recipientItems.length; i++) {
+    //         const li = document.createElement('li');
+    //         li.className = 'list-group-item';
+    //         li.id = recipientItems[i].id;
+
+    //         const itemRow = document.createElement('div');
+    //         itemRow.className = 'row';
+
+    //         const itemNameCol = document.createElement('div');
+    //         itemNameCol.className = 'col list-item'; 
+
+    //         const itemPriceCol = document.createElement('div');
+    //         itemPriceCol.className = 'col-3 list-item';
+
+    //         const linkBtnCol = document.createElement('div');
+    //         linkBtnCol.className = 'col-1 icon-col';
+
+    //         const linkBtn = document.createElement('button');
+    //         linkBtn.className = 'btn icon-btn link-btn';
+    //         linkBtn.innerHTML = linkIcon;
+    //         linkBtn.addEventListener('click', handleItemBtnClick);
+    //         linkBtnCol.appendChild(linkBtn);
+
+    //         const cartBtnCol = document.createElement('div');
+    //         cartBtnCol.className = 'col-1 icon-col';
+    //         const cartBtn = document.createElement('button');
+    //         if (listType === 'to-buy-list') {
+    //             cartBtn.className = 'btn icon-btn fill-cart-btn';
+    //             cartBtn.innerHTML = cartIcon;
+    //         }
+    //         else {
+    //             cartBtn.className = 'btn icon-btn empty-cart-btn';
+    //             cartBtn.innerHTML = emptyCartIcon;
+    //         }
+
+    //         cartBtn.addEventListener('click', handleItemBtnClick);
+    //         cartBtnCol.appendChild(cartBtn);
+
+    //         const removeBtnCol = document.createElement('div');
+    //         removeBtnCol.className = 'col-1 icon-col';
+
+    //         const removeBtn = document.createElement('button');
+    //         removeBtn.className = 'btn icon-btn remove-btn';
+    //         removeBtn.innerHTML = removeIcon;
+    //         // removeBtn.onmouseenter = (e) => e.target.innerHTML = filledRemoveIcon;
+    //         // removeBtn.onmouseleave = (e) => e.target.innerHTML = removeIcon;
+    //         removeBtn.addEventListener('click', handleItemBtnClick);
+            
+    //         removeBtnCol.appendChild(removeBtn);
+
+    //         fetch(itemsURL + '/' + recipientItems[i].item_id)
+    //         .then(res => res.json())
+    //         .then(item => {
+    //             itemNameCol.innerText = item.name;
+    //             itemPriceCol.innerText = `$${item.price.toFixed(2)}`;
+    //             itemRow.append(itemNameCol, itemPriceCol, linkBtnCol, cartBtnCol, removeBtnCol);
+    //             li.appendChild(itemRow);
+    //             ul.appendChild(li);
+    //         });
+    //     }
+    // }
 
     // handle button clicks to move or remove list items
     function handleItemBtnClick(e) {
@@ -382,7 +452,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
         const list = btn.parentElement.parentElement.parentElement.parentElement;
         const li = e.currentTarget.parentElement.parentElement.parentElement;
         const recipientItemId = li.id;
-        const price = parseFloat(li.children[0].children[1].innerText.slice(1));
+        const price = parseFloat(li.getElementsByClassName('item-price')[0].innerText.slice(1));
         const recipientId = document.getElementById('recipient-name').dataset.id;
         
         // move item from to-buy list to bought list
@@ -436,9 +506,11 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
             // remove list item from to-buy and add to bought list
             boughtLi = li.cloneNode(true);
             const row = boughtLi.children[0];
-            const cartBtn = row.children[3].children[0];
+            const cartBtn = row.getElementsByClassName('cart-btn')[0];
             cartBtn.innerHTML = emptyCartIcon;
-            cartBtn.className = 'btn icon-btn empty-cart-btn';
+            cartBtn.className = 'btn icon-btn cart-btn empty-cart-btn';
+
+            // add event listener to each icon button
             for (let i = 2; i < 5; i++) {
                 row.children[i].children[0].addEventListener('click', handleItemBtnClick);
             }
@@ -472,9 +544,11 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
             // remove list item from to-buy and add to bought list
             toBuyLi = li.cloneNode(true);
             const row = toBuyLi.children[0];
-            const cartBtn = row.children[3].children[0];
+            const cartBtn = row.getElementsByClassName('cart-btn')[0];
             cartBtn.innerHTML = cartIcon;
-            cartBtn.className = 'btn icon-btn fill-cart-btn';
+            cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
+
+            // add event listener to each icon button
             for (let i = 2; i < 5; i++) {
                 row.children[i].children[0].addEventListener('click', handleItemBtnClick);
             }
@@ -483,8 +557,9 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
 
             // update budget
             const recipientId = recipientItem.recipient_id;
-            const recipientItemPrice = parseFloat(row.children[1].innerHTML.slice(1));
+            const recipientItemPrice = parseFloat(row.getElementsByClassName('item-price')[0].innerText.slice(1));
             updateBudgetFromRecipientItem(recipientId, recipientItemPrice, 'subtract')
+
         });
     }
 
@@ -497,6 +572,7 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
         // totalSpent.innerText = parseFloat(totalSpent.innerText.slice(1))
         
         const spent = document.getElementById('total-spent').children[0];
+        console.log(spent)
         let updateSpent;
 
         if (changeAmt === 'add') {
@@ -505,6 +581,8 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
         else {
             updateSpent = parseFloat(spent.innerText) - price
         }
+
+        console.log(updateSpent);
         
         const configObj = {
             method: 'PATCH',
