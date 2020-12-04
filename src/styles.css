@@ -24,7 +24,6 @@
 .currency-input {
     border: none;
     width: 97%;
-    
 }
 
 input:focus {
@@ -36,4 +35,14 @@ input:focus {
 input:-webkit-autofill {
     box-shadow: 0 0 0 30px white inset !important;
     -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
+
+#search-form {
+    width: 97%;
+    margin: 20px;
+}
+
+#searchForItem {
+    width: 60%;
+    margin: auto;
 }

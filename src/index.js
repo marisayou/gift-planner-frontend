@@ -15,7 +15,6 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     let firstRecipient; 
 
     // icons for buttons
-    
     const linkIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-link-45deg" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M4.715 6.542L3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.001 1.001 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
         <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 0 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 0 0-4.243-4.243L6.586 4.672z"/>
@@ -35,9 +34,9 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     //     <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
     // </svg>`;
 
-    const filledCartIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cart-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
-    </svg>`;
+    // const filledCartIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cart-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    //     <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+    // </svg>`;
 
     const emptyCartIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-cart-dash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
@@ -54,9 +53,9 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     //     <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
     // </svg>`;
 
-    const filledRemoveIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-dash-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>
-    </svg>`;
+    // const filledRemoveIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-dash-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    //     <path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>
+    // </svg>`;
 
     // event handler for updating recipient info
     const updateForm = document.getElementById('updateRecipientForm');
@@ -71,26 +70,23 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
         return fetch(recipientsURL)
         .then(res => res.json())
         .then(recipients => {
-            handleGetRecipients(recipients);
+            recipients.forEach(recipient => addRecipientToList(recipient));
+            
+            if (recipients.length > 0) {
+                firstRecipient = recipients[0]
+                renderListStructures();
+            }
+            else {
+                const addRecipient = document.createElement('h1');
+                addRecipient.className = 'no-recipients';
+                addRecipient.innerText = 'Add a Recipient!';
+                recipientInfo.appendChild(addRecipient);
+            }
         })
     }
 
-    function handleGetRecipients(recipients) {
-        recipients.forEach(recipient => addRecipientToList(recipient));
-        
-        if (recipients.length > 0) {
-            firstRecipient = recipients[0]
-            renderListStructures();
-        }
-        else {
-            const addRecipient = document.createElement('h1');
-            addRecipient.className = 'no-recipients';
-            addRecipient.innerText = 'Add a Recipient!';
-            recipientInfo.appendChild(addRecipient);
-        }
-    }
-
-    function renderListStructures() {
+    // render layout for a recipient's lists
+    function renderListStructures(recipientId=null) {
         recipientInfo.innerHTML = `<div class="row">
             <div class="col">
                 <h1 id="recipient-name" ></h1>
@@ -134,13 +130,69 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
                 <button type="button" class="btn btn-outline-dark" id="update-recipient" data-toggle="modal" data-target="#updateRecipientModal">Update Recipient</button>           
                 <button class="btn btn-outline-dark" id="delete-recipient">Delete Recipient</button>
             </div>
-            
-        </div>
-        `;
+        </div>`;
         
         toBuyList = document.getElementById('to-buy-list');
         boughtList = document.getElementById('bought-list');
-        renderRecipient(firstRecipient.id);
+        if (!recipientId) {
+            renderRecipient(firstRecipient.id);
+        }
+        else {
+            renderRecipient(recipientId);
+        }
+
+        const toBuyListBtn = document.getElementById('add-to-buy-item');
+        toBuyListBtn.addEventListener('click', addItem);
+        const boughtListBtn = document.getElementById('add-bought-item');
+        boughtListBtn.addEventListener('click', addItem);
+    }
+
+    // add an item to a list
+    function addItem(e) {
+        const recipientId = document.getElementById('recipient-name').dataset.id;
+        let itemType;
+        if (e.target.id === 'add-to-buy-item') {
+            itemType = 'to-buy'; 
+        }
+        else {
+            itemType = 'bought';
+        }
+
+        recipientInfo.innerHTML = `<div class="row">
+            <div class="col text-center">
+                <h1>Add Item</h1>
+            </div>
+        </div>
+        <div class="row text-center">
+            <form id="search-form">
+                <div class="form-group">
+                    <input class="form-control" id="searchForItem" name="search" placeholder="What are you looking for?">
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-outline-dark">Search</button>
+                    <button type="button" class="btn btn-outline-dark" id="cancel-search">Cancel</button>
+                </div>
+            </form>
+        </div>`;
+
+        document.getElementById('search-form').addEventListener('submit', (e, recipientId) => searchForItems(e, recipientId));
+
+        document.getElementById('cancel-search').addEventListener('click', (e) => {
+            e.preventDefault();
+            renderListStructures(recipientId);
+        });
+    }
+
+    function searchForItems(e, recipientId) {
+        e.preventDefault(e);
+
+        const searchTerm = e.target.search.value;
+        
+        let items = findProducts(searchTerm);
+    }
+
+    function findProducts(searchTerm) {
+
     }
 
     // add recipient using modal form
@@ -189,7 +241,10 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     // add a new recipient from the form to the recipients list
     function addRecipientToList(recipient) {
         const recipientLi = document.createElement('li');
-        recipientLi.id = `recipient-${recipient.id}`;
+        //recipientLi.id = `recipient-${recipient.id}`;
+        recipientLi.dataset.id = recipient.id;
+        recipientLi.dataset.budget = recipient.budget;
+        recipientLi.dataset.spent = recipient.spent
         recipientLi.className = 'list-group-item';
         recipientLi.innerText = recipient.name;
         recipientsList.appendChild(recipientLi);
@@ -198,8 +253,8 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
     // click on recipient to view his/her lists
     recipientsList.addEventListener('click', e => {
         if (e.target.tagName === 'LI') {
-            const recipientId = parseInt(e.target.id.slice(10));
-            renderRecipient(recipientId);
+            const recipientId = parseInt(e.target.dataset.id);
+            renderListStructures(recipientId);
         }
     });
 
@@ -224,10 +279,15 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
             const amtSpent = document.getElementById('total-spent').children[0];
             amtSpent.innerText = `${recipient.spent.toFixed(2)}`;
 
+            const recipientBtns = document.getElementById('recipient-btns');
+            recipientBtns.addEventListener('click', (e) => handleRecipientBtnClick(e, recipient.name, recipient.budget))
+
+            return recipient.recipient_items
+        })
+        .then(recipientItems => {
             toBuyList.innerHTML = '';
             boughtList.innerHTML = '';
 
-            const recipientItems = recipient.recipient_items;
             let toBuyItems = [];
             let boughtItems = [];
 
@@ -239,13 +299,10 @@ const recipientItemsURL = 'http://localhost:3000/recipient_items';
                     toBuyItems.push(item);
                 }
             }
-            
-            renderListItems(toBuyList, toBuyItems);
-            renderListItems(boughtList, boughtItems);
 
-            const recipientBtns = document.getElementById('recipient-btns');
-            recipientBtns.addEventListener('click', (e) => handleRecipientBtnClick(e, recipient.name, recipient.budget))
-        })
+            renderListItems(boughtList, boughtItems);
+            renderListItems(toBuyList, toBuyItems);
+        });
     }
 
     // render list items for a recipient
