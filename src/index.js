@@ -1,8 +1,9 @@
 
 // URLs
 const recipientsURL = 'http://localhost:3000/recipients';
-const itemsURL = 'http://localhost:3000/items';
 const recipientItemsURL = 'http://localhost:3000/recipient_items';
+const itemsURL = 'http://localhost:3000/items';
+const searchItemsURL = 'http://localhost:3000/search_items';
 
 // consts
 const recipientsList = document.getElementById('recipientsList');
@@ -51,7 +52,6 @@ const removeIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi 
     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
     <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
 </svg>`;
-
 
 
 // get recipients from db
@@ -108,9 +108,6 @@ function renderListStructures(recipientId=null) {
                     <ul class="list-group" id="bought-list"></ul>
                     <br>
                     <p id="total-spent" style="text-align: center;">Total Spent: $<span></span><p>
-                    <div class="text-center">
-                        <button class="btn btn-outline-dark" id="add-bought-item">Add Item</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -147,20 +144,11 @@ function renderListStructures(recipientId=null) {
 
     const toBuyListBtn = document.getElementById('add-to-buy-item');
     toBuyListBtn.addEventListener('click', addItem);
-    const boughtListBtn = document.getElementById('add-bought-item');
-    boughtListBtn.addEventListener('click', addItem);
 }
 
 // add an item to a list
-function addItem(e) {
+function addItem() {
     const recipientId = document.getElementById('recipient-name').dataset.id;
-    // let itemType;
-    // if (e.target.id === 'add-to-buy-item') {
-    //     itemType = 'to-buy'; 
-    // }
-    // else {
-    //     itemType = 'bought';
-    // }
 
     recipientInfo.innerHTML = `<div class="row">
         <div class="col text-center">
@@ -180,7 +168,7 @@ function addItem(e) {
     </div>
     <div class="row" id="search-results"></div>`;
 
-    document.getElementById('search-form').addEventListener('submit', (e, recipientId) => searchForItems(e, recipientId));
+    document.getElementById('search-form').addEventListener('submit', (e) => searchForItems(e, recipientId));
 
     document.getElementById('cancel-search').addEventListener('click', (e) => {
         e.preventDefault();
@@ -188,16 +176,12 @@ function addItem(e) {
     });
 }
 
+// scrape Nordstrom for products resulting from the search term
+// scraper script is located at gift-planner-backend/app/models/concerns/scraper.js
 function searchForItems(e, recipientId) {
     e.preventDefault(e);
-
     const searchTerm = e.target.search.value;
     
-    findProducts(searchTerm);
-    
-}
-
-function findProducts(searchTerm) {
     const configObj = {
         method: 'POST',
         headers: {
@@ -206,17 +190,20 @@ function findProducts(searchTerm) {
         },
         body: JSON.stringify({ query: searchTerm })
     }
-    fetch('http://localhost:3000/search_items', configObj)
-    .then(displaySearchResults)
+    
+    fetch(searchItemsURL, configObj)
+    .then(() => displaySearchResults(recipientId))
 }
 
-function displaySearchResults() {
-    const resultsDiv = document.getElementById('search-results');
-    
-    fetch('http://localhost:3000/search_items')
+// display resulting products' images, names, and prices
+function displaySearchResults(recipientId) {
+    fetch(searchItemsURL)
     .then(res => res.json())
     .then(products => {
+        const searchResultsDiv = document.getElementById('search-results');
+        searchResultsDiv.innerHTML = '';
         for (const product of products) {
+            
             const prodDiv = document.createElement('div');
             prodDiv.className = 'col-3';
 
@@ -230,12 +217,97 @@ function displaySearchResults() {
             const price = document.createElement('p');
             price.innerText = `$${product.price.toFixed(2)}`;
 
-            prodDiv.append(image, name, price)
-            resultsDiv.append(prodDiv);
+            const addBtn = document.createElement('button');
+            addBtn.className = 'btn btn-outline-dark';
+            addBtn.style = 'margin-left: auto; margin-right: auto;';
+            addBtn.innerText = 'Add Item';
+
+            const body = { name: product.name, price: product.price, link: product.link, image_url: product.image_url };
+            addBtn.addEventListener('click', () => checkIfItemExists(recipientId, body));
+
+            prodDiv.append(image, name, price, addBtn);
+            searchResultsDiv.appendChild(prodDiv);
         }
     })
 }
 
+// check if an item exists in db
+function checkIfItemExists(recipientId, body) {
+    fetch(itemsURL)
+    .then(res => res.json())
+    .then(items => {
+        let curItem;
+        for (let item of items) {
+            if (item.link === body.link) {
+                curItem = item;
+                break;
+            }
+        }
+
+        // update item if it exists but price is different 
+        if (curItem && curItem.price != body.price) {
+            curItem = updateItem(curItem.id, body);
+        }
+        // create item if it's not in the db
+        else if (!curItem) {
+            curItem = createItem(body);
+        }
+        return curItem;
+    })
+    .then(item => createRecipientItem(recipientId, item.id));
+}
+
+// update item if price changed
+function updateItem(itemId, body) {
+    const configObj = {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(body)
+    };
+    return fetch(itemsURL + "/" + itemId, configObj)
+    .then(res => res.json());
+}
+
+// create item if it's not in the db
+function createItem(body) {
+    const configObj = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(body)
+    };
+    return fetch(itemsURL, configObj)
+    .then(res => res.json());
+}
+
+// create recipient item after getting, creating, or updating the item
+function createRecipientItem(recipientId, itemId) {
+
+    const body = {
+        recipient_id: recipientId,
+        item_id: itemId,
+        bought: false
+    };
+    const configObj = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(body)
+    };
+
+    fetch(recipientItemsURL, configObj)
+    .then(() => fetch(searchItemsURL, { method: 'DELETE' }))
+    .then(() => renderListStructures(recipientId));
+}
+
+// add recipient to recipients list after submitting Add Recipient Form
 function addRecipient(e) {
     e.preventDefault();
 
