@@ -1,3 +1,10 @@
+#logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px;
+    width: 50%;
+}   
 
 .icon-col {
     padding: 0;
@@ -42,4 +49,13 @@ input:-webkit-autofill {
 #searchForItem {
     width: 60%;
     margin: auto;
+}
+
+#name-col {
+    display: flex;
+    align-items:center;
+}
+
+.item-price {
+    padding: 0;
 }

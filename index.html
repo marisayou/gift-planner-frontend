@@ -17,8 +17,9 @@
         <br>
         <div class="container-fluid">
             <div class="row">
-                <div class="col-3">
-                    <h1 style="text-align: center;">Recipients</h1>
+                <div class="col-2">
+                    <img src="./img/temporary-logo.png" alt="logo" id="logo">
+                    <!-- <h3>Recipients</h3> -->
                     <div>
                         <ul class="list-group" id="recipientsList"></ul>
                     </div>
@@ -47,6 +48,7 @@
                                                 <span class="currency-sign">$</span>
                                                 <input class="currency-input" id="recipientBudget">
                                             </div>
+                                            <div class="budget-validation"></div>
                                         </div>
                                         <div class="text-center">
                                             <button type="submit" class="btn btn-outline-dark">Submit</button>
@@ -60,7 +62,7 @@
                 </div>
 
                 <!-- add functionality in this div -->
-                <div class="col-9" id="recipient-info"></div>
+                <div class="col-10" id="recipient-info"></div>
 
                 <!-- modal form for updating recipient info -->
                 <div class="modal fade" id="updateRecipientModal">

@@ -80,16 +80,16 @@ function getRecipients() {
 // render layout for a recipient's lists
 function renderListStructures(recipientId=null) {
     recipientInfo.innerHTML = `<div class="row">
-        <div class="col">
+        <div class="col" id="name-col">
             <h1 id="recipient-name"></h1>
         </div>
         <div class="col text-right">
-            <h1 id="recipient-budget">$<span></span></h1>
-            <h4 id="remaining-budget">Remaining: $<span></span></h4>
+            <h3 id="recipient-budget">$<span></span></h2>
+            <h5 id="remaining-budget">Remaining: $<span></span></h4>
         </div>
     </div>
     <div class="row">
-        <div class="col-6">
+        <div class="col">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title" style="text-align: center;">To Buy</h5>
@@ -101,7 +101,7 @@ function renderListStructures(recipientId=null) {
                 </div>
             </div>
         </div>
-        <div class="col-6">
+        <div class="col">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title" style="text-align: center;">Bought</h5>
@@ -110,6 +110,18 @@ function renderListStructures(recipientId=null) {
                     <p id="total-spent" style="text-align: center;">Total Spent: $<span></span><p>
                     <div class="text-center">
                         <button class="btn btn-outline-dark" id="add-bought-item">Add Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" style="text-align: center;">Notes</h5>
+                    <ul class="list-group" id="notes-list"></ul>
+                    <br>
+                    <div class="text-center">
+                        <button class="btn btn-outline-dark" id="add-note">Add Note</button>
                     </div>
                 </div>
             </div>
@@ -142,13 +154,13 @@ function renderListStructures(recipientId=null) {
 // add an item to a list
 function addItem(e) {
     const recipientId = document.getElementById('recipient-name').dataset.id;
-    let itemType;
-    if (e.target.id === 'add-to-buy-item') {
-        itemType = 'to-buy'; 
-    }
-    else {
-        itemType = 'bought';
-    }
+    // let itemType;
+    // if (e.target.id === 'add-to-buy-item') {
+    //     itemType = 'to-buy'; 
+    // }
+    // else {
+    //     itemType = 'bought';
+    // }
 
     recipientInfo.innerHTML = `<div class="row">
         <div class="col text-center">
@@ -165,7 +177,8 @@ function addItem(e) {
                 <button type="button" class="btn btn-outline-dark" id="cancel-search">Cancel</button>
             </div>
         </form>
-    </div>`;
+    </div>
+    <div class="row" id="search-results"></div>`;
 
     document.getElementById('search-form').addEventListener('submit', (e, recipientId) => searchForItems(e, recipientId));
 
@@ -180,19 +193,62 @@ function searchForItems(e, recipientId) {
 
     const searchTerm = e.target.search.value;
     
-    //let items = findProducts(searchTerm);
+    findProducts(searchTerm);
     
 }
 
-// function findProducts(searchTerm) {
+function findProducts(searchTerm) {
+    const configObj = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ query: searchTerm })
+    }
+    fetch('http://localhost:3000/search_items', configObj)
+    .then(displaySearchResults)
+}
 
-// }
+function displaySearchResults() {
+    const resultsDiv = document.getElementById('search-results');
+    
+    fetch('http://localhost:3000/search_items')
+    .then(res => res.json())
+    .then(products => {
+        for (const product of products) {
+            const prodDiv = document.createElement('div');
+            prodDiv.className = 'col-3';
+
+            const image = document.createElement('img');
+            image.style = "width: 90%;"
+            image.src = product.image_url;
+
+            const name = document.createElement('p');
+            name.innerText = product.name;
+
+            const price = document.createElement('p');
+            price.innerText = `$${product.price.toFixed(2)}`;
+
+            prodDiv.append(image, name, price)
+            resultsDiv.append(prodDiv);
+        }
+    })
+}
 
 function addRecipient(e) {
     e.preventDefault();
 
     const name = document.getElementById('recipientName').value;
-    const budget = document.getElementById('recipientBudget').value;
+    let budget = document.getElementById('recipientBudget').value;
+
+    // if (name === "" || !parseFloat(budget)) {
+    //     while (!parseFloat(budget)) {
+    //         const validationDiv = addRecipientForm.querySelector('.budget-validation');
+    //         validationDiv.innerText = "Please provide a valid budget";
+    //         budget = document.getElementById('recipientBudget').value;
+    //     }
+    // }
 
     // reset form and close modal
     addRecipientForm.reset();
@@ -272,31 +328,10 @@ function renderRecipient(recipientId) {
         updateRecipientBtn.addEventListener('click', updateRecipientBtnClick);
 
         renderListItems(recipient.id);
-        // return recipient.recipient_items
-    })
-    // .then(recipientItems => {
-    //     toBuyList.innerHTML = '';
-    //     boughtList.innerHTML = '';
-
-    //     let toBuyItems = [];
-    //     let boughtItems = [];
-
-    //     for (const item of recipientItems) {
-    //         if (item.bought) {
-    //             boughtItems.push(item);
-    //         }
-    //         else {
-    //             toBuyItems.push(item);
-    //         }
-    //     }
-
-    //     renderListItems(boughtList, boughtItems);
-    //     renderListItems(toBuyList, toBuyItems);
-    // });
+    });
 }
 
 // render list items for a recipient
-
 function renderListItems(recipientId) {
     fetch(recipientsURL + `/${recipientId}/recipient_items`)
     .then(res => res.json())
@@ -311,7 +346,7 @@ function renderListItems(recipientId) {
 
             // item name
             const itemNameCol = document.createElement('div');
-            itemNameCol.className = 'col-6 item-name';
+            itemNameCol.className = 'col item-name';
             itemNameCol.innerText = recipientItem.item.name;
 
             // item price
@@ -364,70 +399,6 @@ function renderListItems(recipientId) {
         }
     })
 }
-// function renderListItems(ul, recipientItems) {
-//     const listType = ul.id;
-    
-//     for (let i = 0; i < recipientItems.length; i++) {
-//         const li = document.createElement('li');
-//         li.className = 'list-group-item';
-//         li.id = recipientItems[i].id;
-
-//         const itemRow = document.createElement('div');
-//         itemRow.className = 'row';
-
-//         const itemNameCol = document.createElement('div');
-//         itemNameCol.className = 'col list-item'; 
-
-//         const itemPriceCol = document.createElement('div');
-//         itemPriceCol.className = 'col-3 list-item';
-
-//         const linkBtnCol = document.createElement('div');
-//         linkBtnCol.className = 'col-1 icon-col';
-
-//         const linkBtn = document.createElement('button');
-//         linkBtn.className = 'btn icon-btn link-btn';
-//         linkBtn.innerHTML = linkIcon;
-//         linkBtn.addEventListener('click', handleItemBtnClick);
-//         linkBtnCol.appendChild(linkBtn);
-
-//         const cartBtnCol = document.createElement('div');
-//         cartBtnCol.className = 'col-1 icon-col';
-//         const cartBtn = document.createElement('button');
-//         if (listType === 'to-buy-list') {
-//             cartBtn.className = 'btn icon-btn fill-cart-btn';
-//             cartBtn.innerHTML = cartIcon;
-//         }
-//         else {
-//             cartBtn.className = 'btn icon-btn empty-cart-btn';
-//             cartBtn.innerHTML = emptyCartIcon;
-//         }
-
-//         cartBtn.addEventListener('click', handleItemBtnClick);
-//         cartBtnCol.appendChild(cartBtn);
-
-//         const removeBtnCol = document.createElement('div');
-//         removeBtnCol.className = 'col-1 icon-col';
-
-//         const removeBtn = document.createElement('button');
-//         removeBtn.className = 'btn icon-btn remove-btn';
-//         removeBtn.innerHTML = removeIcon;
-//         // removeBtn.onmouseenter = (e) => e.target.innerHTML = filledRemoveIcon;
-//         // removeBtn.onmouseleave = (e) => e.target.innerHTML = removeIcon;
-//         removeBtn.addEventListener('click', handleItemBtnClick);
-        
-//         removeBtnCol.appendChild(removeBtn);
-
-//         fetch(itemsURL + '/' + recipientItems[i].item_id)
-//         .then(res => res.json())
-//         .then(item => {
-//             itemNameCol.innerText = item.name;
-//             itemPriceCol.innerText = `$${item.price.toFixed(2)}`;
-//             itemRow.append(itemNameCol, itemPriceCol, linkBtnCol, cartBtnCol, removeBtnCol);
-//             li.appendChild(itemRow);
-//             ul.appendChild(li);
-//         });
-//     }
-// }
 
 // handle button clicks to move or remove list items
 function handleItemBtnClick(e) {
