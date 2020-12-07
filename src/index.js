@@ -1,4 +1,3 @@
-
 // URLs
 const recipientsURL = 'http://localhost:3000/recipients';
 const recipientItemsURL = 'http://localhost:3000/recipient_items';
@@ -179,7 +178,7 @@ function addItem() {
 // scrape Nordstrom for products resulting from the search term
 // scraper script is located at gift-planner-backend/app/models/concerns/scraper.js
 function searchForItems(e, recipientId) {
-    e.preventDefault(e);
+    e.preventDefault();
     const searchTerm = e.target.search.value;
     
     const configObj = {
@@ -189,10 +188,10 @@ function searchForItems(e, recipientId) {
             'Accept': 'application/json'
         },
         body: JSON.stringify({ query: searchTerm })
-    }
+    };
     
     fetch(searchItemsURL, configObj)
-    .then(() => displaySearchResults(recipientId))
+    .then(() => displaySearchResults(recipientId));
 }
 
 // display resulting products' images, names, and prices
@@ -333,7 +332,6 @@ function addRecipient(e) {
     // TODO: check that float has max of 2 decimal places
     if (name === "" || budget === "") {
         return; // TODO: error message
-        
     }
 
     const configObj = {
@@ -363,9 +361,8 @@ function addRecipient(e) {
 function addRecipientToList(recipient) {
     const recipientLi = document.createElement('li');
     recipientLi.id = `recipient-${recipient.id}`;
-    //recipientLi.dataset.id = recipient.id;
     recipientLi.dataset.budget = recipient.budget;
-    recipientLi.dataset.spent = recipient.spent
+    recipientLi.dataset.spent = recipient.spent;
     recipientLi.className = 'list-group-item';
     recipientLi.innerText = recipient.name;
     recipientsList.appendChild(recipientLi);
@@ -388,7 +385,7 @@ function renderRecipient(recipientId) {
     .then(recipient => {
 
         const recipientName = document.getElementById('recipient-name');
-        recipientName.dataset.id = recipient.id
+        recipientName.dataset.id = recipient.id;
         recipientName.innerText = recipient.name;
 
         const recipientBudget = document.getElementById('recipient-budget').children[0];
@@ -401,7 +398,9 @@ function renderRecipient(recipientId) {
         amtSpent.innerText = `${recipient.spent.toFixed(2)}`;
 
         const updateRecipientBtn = document.getElementById('update-recipient');
-        updateRecipientBtn.addEventListener('click', updateRecipientBtnClick);
+        updateRecipientBtn.addEventListener('click', (e) => {
+            updateRecipientBtnClick(e, recipientName.innerText, recipientBudget.innerText);
+        });
 
         renderListItems(recipient.id);
     });
@@ -428,7 +427,8 @@ function renderListItems(recipientId) {
             // item price
             const itemPriceCol = document.createElement('div');
             itemPriceCol.className = 'col-3 item-price';
-            itemPriceCol.innerText = `$${recipientItem.item.price.toFixed(2)}`; // span
+            const price = recipientItem.item.price.toFixed(2);
+            itemPriceCol.innerText = `$${price}`; // span
 
             // link button
             const linkBtnCol = document.createElement('div');
@@ -446,10 +446,17 @@ function renderListItems(recipientId) {
             if (recipientItem.bought) {
                 cartBtn.className = 'btn icon-btn cart-btn empty-cart-btn';
                 cartBtn.innerHTML = emptyCartIcon;
+                cartBtn.type = 'button';
             }
             else {
                 cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
                 cartBtn.innerHTML = cartIcon;
+                cartBtn.type = 'button';
+                const remainingBudget = parseFloat(document.getElementById('remaining-budget').children[0].innerText);
+                if (price > remainingBudget) {
+                    cartBtn.dataset.toggle = 'modal';
+                    cartBtn.dataset.target = '#overBudgetModal';
+                }
             }
             cartBtn.addEventListener('click', handleItemBtnClick);
             cartBtnCol.appendChild(cartBtn);
@@ -484,15 +491,28 @@ function handleItemBtnClick(e) {
     const recipientItemId = li.id;
     const price = parseFloat(li.getElementsByClassName('item-price')[0].innerText.slice(1));
     const recipientId = document.getElementById('recipient-name').dataset.id;
+    const recipientName = document.getElementById('recipient-name').innerText;
+    const recipientBudget = document.getElementById('recipient-budget').innerText.slice(1);
+
     
     // move item from to-buy list to bought list
     if (btn.classList.contains('fill-cart-btn')) {
-        moveToBoughtList(recipientItemId, li, price)
+        const remainingBudget = parseFloat(document.getElementById('remaining-budget').children[0].innerText);
+        // if price of item is higher than remaining budget, don't add to bought list
+        if (price > remainingBudget) {
+            document.getElementById('add-to-budget').addEventListener('click', (e) => {
+                document.getElementById('cancel-add-item').click();
+                updateRecipientBtnClick(e, recipientName, recipientBudget);
+            });
+        }
+        else{
+            moveToBoughtList(recipientItemId, li, price);
+        }
     }
 
     // move item from bought list to to-buy list
     else if (btn.classList.contains('empty-cart-btn')) {
-        moveToToBuyList(recipientItemId, li)
+        moveToToBuyList(recipientItemId, li);
     }
 
     // remove item from to-buy list
@@ -539,6 +559,9 @@ function moveToBoughtList(recipientItemId, li, price) {
         const cartBtn = row.getElementsByClassName('cart-btn')[0];
         cartBtn.innerHTML = emptyCartIcon;
         cartBtn.className = 'btn icon-btn cart-btn empty-cart-btn';
+        cartBtn.type = 'button';  
+        cartBtn.removeAttribute('data-toggle');
+        cartBtn.removeAttribute('data-target');
 
         // add event listener to each icon button
         for (let i = 2; i < 5; i++) {
@@ -550,7 +573,7 @@ function moveToBoughtList(recipientItemId, li, price) {
         // update budget
         const recipientId = recipientItem.recipient_id;
         const recipientItemPrice = recipientItem.price;
-        updateBudgetFromRecipientItem(recipientId, recipientItemPrice, 'add')
+        updateBudgetFromRecipientItem(recipientId, recipientItemPrice, 'add');
     });
 }
 
@@ -577,6 +600,7 @@ function moveToToBuyList(recipientItemId, li) {
         const cartBtn = row.getElementsByClassName('cart-btn')[0];
         cartBtn.innerHTML = cartIcon;
         cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
+        cartBtn.type = 'button';   
 
         // add event listener to each icon button
         for (let i = 2; i < 5; i++) {
@@ -588,7 +612,7 @@ function moveToToBuyList(recipientItemId, li) {
         // update budget
         const recipientId = recipientItem.recipient_id;
         const recipientItemPrice = parseFloat(row.getElementsByClassName('item-price')[0].innerText.slice(1));
-        updateBudgetFromRecipientItem(recipientId, recipientItemPrice, 'subtract')
+        updateBudgetFromRecipientItem(recipientId, recipientItemPrice, 'subtract');
 
     });
 }
@@ -596,10 +620,6 @@ function moveToToBuyList(recipientItemId, li) {
 // update budget, remaining budget, and total spend as a result of moving items between lists
 function updateBudgetFromRecipientItem(recipientId, price, changeAmt) {
     const remainingBudget = document.getElementById('remaining-budget').children[0];
-
-    // update total spent
-    // const totalSpent = document.getElementById('total-spent');
-    // totalSpent.innerText = parseFloat(totalSpent.innerText.slice(1))
     
     const spent = document.getElementById('total-spent').children[0];
     let updateSpent;
@@ -608,7 +628,7 @@ function updateBudgetFromRecipientItem(recipientId, price, changeAmt) {
         updateSpent = parseFloat(spent.innerText) + price;
     }
     else {
-        updateSpent = parseFloat(spent.innerText) - price
+        updateSpent = parseFloat(spent.innerText) - price;
     }
     
     const configObj = {
@@ -625,19 +645,18 @@ function updateBudgetFromRecipientItem(recipientId, price, changeAmt) {
     .then(recipient => { 
         spent.innerText = recipient.spent.toFixed(2);
         remainingBudget.innerText = parseFloat(recipient.budget - recipient.spent).toFixed(2);
+        updateOverBudgetModalToggle();
     });
 }
 
 // handle click of buttons to update or delete recipients
-function updateRecipientBtnClick(e) {
-    
-    if (e.target.id === 'update-recipient') {
-        const updateRecipientName = document.getElementById('updateRecipientName');
-        updateRecipientName.value = document.getElementById('recipient-name').innerText;
+function updateRecipientBtnClick(e, recipientName, recipientBudget) {
+    const updateRecipientName = document.getElementById('updateRecipientName');
+    updateRecipientName.value = recipientName;
 
-        const updateRecipientBudget = document.getElementById('updateRecipientBudget');
-        updateRecipientBudget.value = document.getElementById('recipient-budget').innerText.slice(1);
-    }
+    const updateRecipientBudget = document.getElementById('updateRecipientBudget');
+    updateRecipientBudget.value = recipientBudget;
+    
 }
 
 // update recipient info
@@ -667,9 +686,26 @@ function updateRecipient(e, id) {
         document.getElementById('recipient-name').innerText = recipient.name;
         document.getElementById('recipient-budget').children[0].innerText = recipient.budget.toFixed(2);
         document.getElementById('remaining-budget').children[0].innerText = (recipient.budget - recipient.spent).toFixed(2);
+        updateOverBudgetModalToggle();
     });
 }
 
+function updateOverBudgetModalToggle() {
+    // find all cartbtns on to-buy-list
+    const toBuyList = document.getElementById('to-buy-list');
+    const cartBtns = toBuyList.getElementsByClassName('fill-cart-btn');
+    const remainingBudget = parseFloat(document.getElementById('remaining-budget').children[0].innerText);
+    for (let i = 0; i < cartBtns.length; i++) {
+        const cartBtn = cartBtns[i];
+        cartBtn.removeAttribute('data-toggle');
+        cartBtn.removeAttribute('data-target');
+        const price = parseFloat(cartBtn.parentElement.parentElement.children[1].innerText.slice(1));
+        if (price > remainingBudget) {
+            cartBtn.dataset.toggle = 'modal';
+            cartBtn.dataset.target = '#overBudgetModal';
+        }
+    }
+}
 // delete a recipient and his/her recipient items
 function deleteRecipient() {
     // close modal
