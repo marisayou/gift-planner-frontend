@@ -20,12 +20,24 @@ addRecipientForm.addEventListener('submit', addRecipient);
 // reset form if modal is closed 
 const cancel = document.getElementsByClassName('cancel');
 for (let i = 0; i < cancel.length; i++) {
-    cancel[i].addEventListener('click', () => addRecipientForm.reset())
+    cancel[i].addEventListener('click', () => {
+        addRecipientForm.reset();
+    });
 }
 
 // event handler for updating recipient info
 const updateForm = document.getElementById('updateRecipientForm');
-updateForm.addEventListener('submit', (e) => updateRecipient(e, updateForm.dataset.id));
+updateForm.addEventListener('submit', (e) => {
+    updateRecipient(e, updateForm.dataset.id)
+});
+// remove previous error messages when form is cancelled
+const updateFormCancelBtn = updateForm.querySelector('button[data-dismiss="modal"]')
+updateFormCancelBtn.addEventListener('click', () => {
+    const errorMsg = updateForm.querySelector('.error-msg');
+    if (errorMsg) {
+        errorMsg.remove();
+    }
+})
 
 // event handler for deleting recipient info
 const confirmDeleteRecipient = document.getElementById('confirm-delete-recipient');
@@ -662,10 +674,30 @@ function updateRecipientBtnClick(e, recipientName, recipientBudget) {
 // update recipient info
 function updateRecipient(e, id) {
     e.preventDefault();
+    // remove error messages upon submit, if there are any
+    const errorMsg = updateForm.querySelector('.error-msg');
+    if (errorMsg) {
+        errorMsg.remove();
+    }
 
+    const spent = parseFloat(document.getElementById('total-spent').children[0].innerText);
     const name = document.getElementById('updateRecipientName').value;
-    const budget = document.getElementById('updateRecipientBudget').value;
+    const budget = parseFloat(document.getElementById('updateRecipientBudget').value);
+    
+    // should not be able to update budget to be less that amount already spent
+    if (budget < spent) {
+        const formBudget = document.getElementById('updateRecipientForm').children[1];
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-msg';
+        const errorMsg = document.createElement('p');
+        errorMsg.innerText = "The budget for this recipient cannot be lower than amount already spent.";
 
+        errorDiv.appendChild(errorMsg);
+        formBudget.appendChild(errorDiv);
+        return;
+    }
+    
     // close modal form
     updateRecipientModal.querySelector('button.close').click();
 
