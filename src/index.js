@@ -122,7 +122,7 @@ function renderListStructures(recipientId=null) {
                     <ul class="list-group" id="to-buy-list"></ul>
                     <br>
                     <div class="text-center">
-                        <button class="btn btn-outline-dark" id="add-to-buy-item">Add Item</button>
+                        <button class="btn card-btn" id="add-to-buy-item">ADD ITEM</button>
                     </div>
                 </div>
             </div>
@@ -133,7 +133,7 @@ function renderListStructures(recipientId=null) {
                     <h5 class="card-title" style="text-align: center;">Bought</h5>
                     <ul class="list-group" id="bought-list"></ul>
                     <br>
-                    <p id="total-spent" style="text-align: center;">Total Spent: $<span></span><p>
+                    <p id="total-spent" style="text-align: center;">TOTAL SPENT: $<span></span><p>
                 </div>
             </div>
         </div>
@@ -144,7 +144,7 @@ function renderListStructures(recipientId=null) {
                     <ul class="list-group" id="notes-list"></ul>
                     <br>
                     <div class="text-center">
-                        <button class="btn btn-outline-dark" id="add-note">Add Note</button>
+                        <button class="btn card-btn" id="add-note">ADD NOTE</button>
                     </div>
                 </div>
             </div>
@@ -154,8 +154,8 @@ function renderListStructures(recipientId=null) {
     <br>
     <div class="row">
         <div class="col text-center" id="recipient-btns">
-            <button type="button" class="btn btn-outline-dark" id="update-recipient" data-toggle="modal" data-target="#updateRecipientModal">Update Recipient</button>           
-            <button class="btn btn-outline-dark" id="delete-recipient" data-toggle="modal" data-target="#deleteRecipientModal">Delete Recipient</button>
+            <button type="button" class="btn background-btn" id="update-recipient" data-toggle="modal" data-target="#updateRecipientModal">UPDATE RECIPIENT</button>           
+            <button class="btn background-btn" id="delete-recipient" data-toggle="modal" data-target="#deleteRecipientModal">DELETE RECIPIENT</button>
         </div>
     </div>`;
     
@@ -178,7 +178,7 @@ function addItem() {
 
     recipientInfo.innerHTML = `<div class="row">
         <div class="col text-center">
-            <h1>Add Item</h1>
+            <h2>Add Item</h2>
         </div>
     </div>
     <div class="row text-center">
@@ -187,8 +187,8 @@ function addItem() {
                 <input class="form-control" id="searchForItem" name="search" placeholder="What are you looking for?">
             </div>
             <div class="text-center">
-                <button type="submit" class="btn btn-outline-dark">Search</button>
-                <button type="button" class="btn btn-outline-dark" id="cancel-search">Cancel</button>
+                <button type="submit" class="btn background-btn">SEARCH</button>
+                <button type="button" class="btn background-btn" id="cancel-search">CANCEL</button>
             </div>
         </form>
     </div>
@@ -229,28 +229,35 @@ function displaySearchResults(recipientId) {
         const searchResultsDiv = document.getElementById('search-results');
         searchResultsDiv.innerHTML = '';
         if (products.length === 0) {
-            searchResultsDiv.innerText = 'Sorry, no results match your search! Please try again';
+            const noResultsDiv = document.createElement('div');
+            noResultsDiv.innerText = 'Sorry, no results match your search! Please try again';
+            noResultsDiv.id = 'no-results';
+            searchResultsDiv.appendChild(noResultsDiv)
             return;
         }
         for (const product of products) {
             
             const prodDiv = document.createElement('div');
             prodDiv.className = 'col-3';
+            prodDiv.style = 'margin-bottom: 25px;';
 
             const image = document.createElement('img');
+            image.className = 'result-image';
             image.style = "width: 90%;"
             image.src = product.image_url;
 
             const name = document.createElement('p');
+            name.className = 'search-result-name'
             name.innerText = product.name;
 
             const price = document.createElement('p');
+            price.className = 'search-result-price'
             price.innerText = `$${product.price.toFixed(2)}`;
 
             const addBtn = document.createElement('button');
-            addBtn.className = 'btn btn-outline-dark';
+            addBtn.className = 'btn background-btn';
             addBtn.style = 'margin-left: auto; margin-right: auto;';
-            addBtn.innerText = 'Add Item';
+            addBtn.innerText = 'ADD ITEM';
 
             const body = { name: product.name, price: product.price, link: product.link, image_url: product.image_url };
             addBtn.addEventListener('click', () => checkIfItemExists(recipientId, body));
@@ -453,6 +460,9 @@ function alertPriceChange(recipientItem, itemPrice, recipientItemPrice) {
     alertPriceChange.role = 'alert';
     if (itemPrice === 0) {
         alertPriceChange.innerText =`${recipientItem.item.name} is out of stock.`;
+    }
+    else if (recipientItemPrice === 0) {
+        alertPriceChange.innerText =`${recipientItem.item.name} is back in stock.`
     }
     else {
         alertPriceChange.innerText = `The price for ${recipientItem.item.name} has changed from $${recipientItemPrice.toFixed(2)} to $${itemPrice.toFixed(2)}.`;

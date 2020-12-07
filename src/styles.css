@@ -1,19 +1,140 @@
+
+/* colors */
+body {
+    margin-left: 50px;
+    margin-right: 50px;
+    background-color: #38383a;
+}
+
+.card {
+    /* border-radius: 0; */
+    background-color: #c7a35a;
+}
+
+/* .list-group {
+    border-radius: 0;
+} */
+
+.list-group-item {
+    background-color: #e7cc96;
+    
+    color: #5c5c5e;
+}
+
+button.btn.background-btn {
+    background-color: #c7a35a;
+    color: white;
+}
+
+button.btn.background-btn:hover {
+    background-color: white;
+    color: #c7a35a;
+}
+
+button.btn.card-btn {
+    color: #c7a35a;
+}
+
+button.btn.card-btn:hover {
+    background-color: #e2c488;
+    color: white;
+}
+
+#total-spent {
+    color: white;
+}
+
+button.btn.modal-btn {
+    background-color: #5c5c5e;
+    color: white;
+}
+
+button.btn.modal-btn:hover {
+    background-color: #c7a35a;
+    color: white;
+}
+
+/* fonts */
+body {
+    /* font-family: 'Amatic SC'; */
+    font-family: 'Patrick Hand';
+    font-size: 19px;
+}
+h1 {
+    font-family: 'Fredericka the Great';
+    color: white;
+    font-size: 80px;
+}
+
+h2 {
+    font-family: 'Fredericka the Great';
+    color: white;
+    font-size: 60px;
+}
+
+h3{
+    font-family: 'Fredericka the Great';
+    color: white;
+    font-size: 40px;
+}
+
+#remaining-budget {
+    font-family: 'Bilbo';
+    font-size: 30px;
+    color: white;
+    
+}
+
+.card-title {
+    font-family: 'Bilbo';
+    font-weight: bold;
+    font-size: 30px;
+    /* color: #5c5c5e; */
+    color: white;
+}
+
+button.btn {
+    font-family: 'Patrick Hand';
+    background-color: white;
+}
+
+#search-results {
+    color: white;
+}
+
+
+/*************************** positioning  ***************************/
 #logo {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 15px;
+    margin-top: 5px;
+    margin-bottom: 30px;
     width: 50%;
+    filter: brightness(0) invert(1);
 }   
 
+/* style icon buttons */
 .icon-col {
     padding: 0;
     text-align: center;
 }
 
-.icon-btn {
-    padding: 0;
+button.icon-btn {
+    padding: 0; 
     background-color: transparent;
+}
+
+button.icon-btn:hover:enabled {
+    color: white;
+}
+
+button.icon-btn:disabled {
+    color: #7b7b7e;
+}
+
+button.icon-btn:hover:disabled {
+    color: #7b7b7e;
 }
 
 .bi {
@@ -21,6 +142,28 @@
     margin-bottom: 5px;
 }
 
+#search-results div button {
+    display: flex;
+    justify-content: center;
+}
+
+.search-result-name, .search-result-price {
+    text-align: center;
+}
+
+.result-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#no-results {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* add currency sign to form input and style input field */
 .currency-sign {
     margin-top: 1px;
 }
@@ -46,16 +189,15 @@ input:-webkit-autofill {
     margin: 20px;
 }
 
+
+/* shorten width of search field for adding item */
 #searchForItem {
     width: 60%;
     margin: auto;
 }
 
-#name-col {
-    display: flex;
-    align-items:center;
-}
-
+/* allow more room for item price */
 .item-price {
     padding: 0;
 }
+
