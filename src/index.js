@@ -202,6 +202,10 @@ function displaySearchResults(recipientId) {
     .then(products => {
         const searchResultsDiv = document.getElementById('search-results');
         searchResultsDiv.innerHTML = '';
+        if (products.length === 0) {
+            searchResultsDiv.innerText = 'Sorry, no results match your search! Please try again';
+            return;
+        }
         for (const product of products) {
             
             const prodDiv = document.createElement('div');
