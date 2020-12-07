@@ -269,7 +269,7 @@ function checkIfItemExists(recipientId, body) {
         }
         return curItem;
     })
-    .then(item => createRecipientItem(recipientId, item.id));
+    .then(item => createRecipientItem(recipientId, item.id, item.price));
 }
 
 // update item if price changed
@@ -301,12 +301,13 @@ function createItem(body) {
 }
 
 // create recipient item after getting, creating, or updating the item
-function createRecipientItem(recipientId, itemId) {
+function createRecipientItem(recipientId, itemId, itemPrice) {
 
     const body = {
         recipient_id: recipientId,
         item_id: itemId,
-        bought: false
+        bought: false,
+        price: itemPrice
     };
     const configObj = {
         method: 'POST',
@@ -359,15 +360,7 @@ function addRecipient(e) {
     .then(recipient => {
         addRecipientToList(recipient);
         renderListStructures(recipient.id);
-        // if (!firstRecipient) {
-        //     firstRecipient = recipient;
-        //     renderListStructures();
-        // }
-        // else {
-        //     renderRecipient(recipient.id);
-        // }
     });
-    
 }
 
 // add a new recipient from the form to the recipients list
@@ -415,100 +408,142 @@ function renderRecipient(recipientId) {
             updateRecipientBtnClick(e, recipientName.innerText, recipientBudget.innerText);
         });
 
-        renderListItems(recipient.id);
+        getListItems(recipient.id);
     });
 }
 
 // render list items for a recipient
-function renderListItems(recipientId) {
+function getListItems(recipientId) {
     fetch(recipientsURL + `/${recipientId}/recipient_items`)
     .then(res => res.json())
     .then(recipientItems => {
         for (const recipientItem of recipientItems) {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.id = recipientItem.id;
+            // check if prices of to-buy items have changed
+            if (!recipientItem.bought && recipientItem.price !== recipientItem.item.price) {
+                alertPriceChange(recipientItem, recipientItem.item.price, recipientItem.price);
 
-            const itemRow = document.createElement('div');
-            itemRow.className = 'row';
-
-            // item name
-            const itemNameCol = document.createElement('div');
-            itemNameCol.className = 'col item-name';
-            itemNameCol.innerText = recipientItem.item.name;
-
-            // item price
-            const itemPriceCol = document.createElement('div');
-            itemPriceCol.className = 'col-3 item-price';
-            const price = recipientItem.item.price.toFixed(2);
-            itemPriceCol.innerText = `$${price}`; // span
-
-            // link button
-            const linkBtnCol = document.createElement('div');
-            linkBtnCol.className = 'col-1 icon-col';
-            const linkBtn = document.createElement('button');
-            linkBtn.className = 'btn icon-btn link-btn';
-            linkBtn.innerHTML = linkIcon
-            linkBtn.addEventListener('click', () => {
-                window.open(recipientItem.item.link)
-            });
-            linkBtnCol.appendChild(linkBtn);
-
-            // cart button
-            const cartBtnCol = document.createElement('div');
-            cartBtnCol.className = 'col-1 icon-col';
-            const cartBtn = document.createElement('button');
-            if (recipientItem.bought) {
-                cartBtn.className = 'btn icon-btn cart-btn empty-cart-btn';
-                cartBtn.innerHTML = emptyCartIcon;
-                cartBtn.type = 'button';
+                updateRecipientItemPrice(recipientItem)
+                .then(recipientItem => renderListItems(recipientItem));
             }
             else {
-                cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
-                cartBtn.innerHTML = cartIcon;
-                cartBtn.type = 'button';
-                const remainingBudget = parseFloat(document.getElementById('remaining-budget').children[0].innerText);
-                if (price > remainingBudget) {
-                    cartBtn.dataset.toggle = 'modal';
-                    cartBtn.dataset.target = '#overBudgetModal';
-                }
-            }
-            cartBtn.addEventListener('click', handleItemBtnClick);
-            cartBtnCol.appendChild(cartBtn);
-
-            // remove item button
-            const removeBtnCol = document.createElement('div');
-            removeBtnCol.className = 'col-1 icon-col';
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'btn icon-btn remove-btn';
-            removeBtn.innerHTML = removeIcon;
-            removeBtn.addEventListener('click', handleItemBtnClick);
-            removeBtnCol.appendChild(removeBtn);
-
-            itemRow.append(itemNameCol, itemPriceCol, linkBtnCol, cartBtnCol, removeBtnCol);
-            li.appendChild(itemRow);
-
-            if (recipientItem.bought) {
-                boughtList.appendChild(li);
-            }
-            else {
-                toBuyList.appendChild(li);
+                renderListItems(recipientItem);
             }
         }
     })
 }
 
-// handle button clicks to move or remove list items
-function handleItemBtnClick(e) {
-    const btn = e.currentTarget;
-    const list = btn.parentElement.parentElement.parentElement.parentElement;
-    const li = e.currentTarget.parentElement.parentElement.parentElement;
-    const recipientItemId = li.id;
-    const price = parseFloat(li.getElementsByClassName('item-price')[0].innerText.slice(1));
-    const recipientId = document.getElementById('recipient-name').dataset.id;
-    const recipientName = document.getElementById('recipient-name').innerText;
-    const recipientBudget = document.getElementById('recipient-budget').innerText.slice(1);
+function alertPriceChange(recipientItem, itemPrice, recipientItemPrice) {
+    const alertPriceChange = document.createElement('div');
+    alertPriceChange.className = 'alert alert-dark';
+    alertPriceChange.role = 'alert';
+    alertPriceChange.innerText = `The price for ${recipientItem.item.name} has changed from $${recipientItemPrice.toFixed(2)} to $${itemPrice.toFixed(2)}!`;
 
+    const closeAlertBtn = document.createElement('button');
+    closeAlertBtn.type = 'button';
+    closeAlertBtn.className = 'close';
+    closeAlertBtn.innerHTML = `<span>&times;</span>`;
+    closeAlertBtn.addEventListener('click', (e) => e.currentTarget.parentElement.remove());
+
+    alertPriceChange.appendChild(closeAlertBtn);
+    document.getElementById('recipient-info').prepend(alertPriceChange);
+}
+
+function renderListItems(recipientItem) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+    li.id = recipientItem.id;
+
+    const itemRow = document.createElement('div');
+    itemRow.className = 'row';
+
+    // item name
+    const itemNameCol = document.createElement('div');
+    itemNameCol.className = 'col item-name';
+    itemNameCol.innerText = recipientItem.item.name;
+
+    // item price
+    const itemPriceCol = document.createElement('div');
+    itemPriceCol.className = 'col-3 item-price';
+    const price = recipientItem.price.toFixed(2);
+    itemPriceCol.innerText = `$${price}`; // span
+
+    // link button
+    const linkBtnCol = document.createElement('div');
+    linkBtnCol.className = 'col-1 icon-col';
+    const linkBtn = document.createElement('button');
+    linkBtn.className = 'btn icon-btn link-btn';
+    linkBtn.innerHTML = linkIcon
+    linkBtn.addEventListener('click', () => {
+        window.open(recipientItem.item.link)
+    });
+    linkBtnCol.appendChild(linkBtn);
+
+    // cart button
+    const cartBtnCol = document.createElement('div');
+    cartBtnCol.className = 'col-1 icon-col';
+    const cartBtn = document.createElement('button');
+    if (recipientItem.bought) {
+        cartBtn.className = 'btn icon-btn cart-btn empty-cart-btn';
+        cartBtn.innerHTML = emptyCartIcon;
+        cartBtn.type = 'button';
+    }
+    else {
+        cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
+        cartBtn.innerHTML = cartIcon;
+        cartBtn.type = 'button';
+        const remainingBudget = parseFloat(document.getElementById('remaining-budget').children[0].innerText);
+        if (price > remainingBudget) {
+            cartBtn.dataset.toggle = 'modal';
+            cartBtn.dataset.target = '#overBudgetModal';
+        }
+    }
+    cartBtn.addEventListener('click', (e) => handleItemBtnClick(e, recipientItem));
+    cartBtnCol.appendChild(cartBtn);
+
+    // remove item button
+    const removeBtnCol = document.createElement('div');
+    removeBtnCol.className = 'col-1 icon-col';
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn icon-btn remove-btn';
+    removeBtn.innerHTML = removeIcon;
+    removeBtn.addEventListener('click', (e) => handleItemBtnClick(e, recipientItem));
+    removeBtnCol.appendChild(removeBtn);
+
+    itemRow.append(itemNameCol, itemPriceCol, linkBtnCol, cartBtnCol, removeBtnCol);
+    li.appendChild(itemRow);
+
+    if (recipientItem.bought) {
+        boughtList.appendChild(li);
+    }
+    else {
+        toBuyList.appendChild(li);
+    }
+}
+
+function updateRecipientItemPrice(recipientItem) {
+    const configObj = {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ price: recipientItem.item.price })
+    }
+    return fetch(recipientItemsURL + '/' + recipientItem.id, configObj)
+    .then(res => res.json())
+}
+
+// handle button clicks to move or remove list items
+function handleItemBtnClick(e, recipientItem) {
+    const btn = e.currentTarget;
+    const li = btn.parentElement.parentElement.parentElement;
+    const list = li.parentElement;
+
+    const recipientItemId = li.id;
+    const price = recipientItem.item.price;
+    const recipientId = recipientItem.recipient.id;
+    const recipientName = recipientItem.recipient.name;
+    const recipientBudget = recipientItem.recipient.budget;
     
     // move item from to-buy list to bought list
     if (btn.classList.contains('fill-cart-btn')) {
@@ -527,7 +562,7 @@ function handleItemBtnClick(e) {
 
     // move item from bought list to to-buy list
     else if (btn.classList.contains('empty-cart-btn')) {
-        moveToToBuyList(recipientItemId, li);
+        moveToToBuyList(recipientItemId, li, recipientItem.item.price, recipientItem.price);
     }
 
     // remove item from to-buy list
@@ -578,7 +613,7 @@ function moveToBoughtList(recipientItemId, li, price) {
             window.open(recipientItem.item.link)
         });
         for (let i = 3; i < 5; i++) {
-            row.children[i].children[0].addEventListener('click', handleItemBtnClick);
+            row.children[i].children[0].addEventListener('click', (e) => handleItemBtnClick(e, recipientItem));
         }
         boughtList.appendChild(boughtLi);
         li.remove();
@@ -591,7 +626,7 @@ function moveToBoughtList(recipientItemId, li, price) {
 }
 
 // move item from bought list to to-buy list
-function moveToToBuyList(recipientItemId, li) {
+function moveToToBuyList(recipientItemId, li, itemPrice, recipientItemPrice) {
     const configObj = {
         method: 'PATCH',
         headers: {
@@ -600,7 +635,7 @@ function moveToToBuyList(recipientItemId, li) {
         },
         body: JSON.stringify({
             bought: false,
-            price: null
+            price: itemPrice
         })
     };
 
@@ -610,6 +645,8 @@ function moveToToBuyList(recipientItemId, li) {
         // remove list item from to-buy and add to bought list
         toBuyLi = li.cloneNode(true);
         const row = toBuyLi.children[0];
+        const priceCol = row.getElementsByClassName('item-price')[0];
+        priceCol.innerText = `$${itemPrice.toFixed(2)}`;
         const cartBtn = row.getElementsByClassName('cart-btn')[0];
         cartBtn.innerHTML = cartIcon;
         cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
@@ -620,15 +657,18 @@ function moveToToBuyList(recipientItemId, li) {
             window.open(recipientItem.item.link)
         });
         for (let i = 3; i < 5; i++) {
-            row.children[i].children[0].addEventListener('click', handleItemBtnClick);
+            row.children[i].children[0].addEventListener('click', (e) => handleItemBtnClick(e, recipientItem));
         }
         toBuyList.appendChild(toBuyLi);
         li.remove();
 
-        // update budget
-        const recipientId = recipientItem.recipient_id;
-        const recipientItemPrice = parseFloat(row.getElementsByClassName('item-price')[0].innerText.slice(1));
-        updateBudgetFromRecipientItem(recipientId, recipientItemPrice, 'subtract');
+        // alert price change if there is one
+        if (itemPrice !== recipientItemPrice) {
+            alertPriceChange(recipientItem, itemPrice, recipientItemPrice);
+        }
+
+        // update budget, subtracting old price if there was a price change
+        updateBudgetFromRecipientItem(recipientItem.recipient_id, recipientItemPrice, 'subtract');
 
     });
 }
