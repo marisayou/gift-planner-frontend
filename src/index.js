@@ -66,8 +66,8 @@ const removeIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi 
 
 
 // get recipients from db
+// updatePrices().then(getRecipients);
 getRecipients();
-
 function getRecipients() {
     recipientsList.innerHTML = '';
     return fetch(recipientsURL)
@@ -87,6 +87,21 @@ function getRecipients() {
         }
     })
 }
+
+// function updatePrices() {
+//     return fetch(itemsURL)
+//     .then(res => res.json())
+//     .then(items => items.forEach(item => {
+//         const configObj = {
+//             method: 'PATCH',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Accept': 'application/json'
+//             }
+//         }
+//         fetch(itemsURL + '/' + item.id, configObj)
+//     }))
+// }
 
 // render layout for a recipient's lists
 function renderListStructures(recipientId=null) {
@@ -405,7 +420,7 @@ function renderRecipient(recipientId) {
 
         const updateRecipientBtn = document.getElementById('update-recipient');
         updateRecipientBtn.addEventListener('click', (e) => {
-            updateRecipientBtnClick(e, recipientName.innerText, recipientBudget.innerText);
+            updateRecipientBtnClick(e, recipient.id);
         });
 
         getListItems(recipient.id);
@@ -436,7 +451,12 @@ function alertPriceChange(recipientItem, itemPrice, recipientItemPrice) {
     const alertPriceChange = document.createElement('div');
     alertPriceChange.className = 'alert alert-dark';
     alertPriceChange.role = 'alert';
-    alertPriceChange.innerText = `The price for ${recipientItem.item.name} has changed from $${recipientItemPrice.toFixed(2)} to $${itemPrice.toFixed(2)}!`;
+    if (itemPrice === 0) {
+        alertPriceChange.innerText =`${recipientItem.item.name} is out of stock.`;
+    }
+    else {
+        alertPriceChange.innerText = `The price for ${recipientItem.item.name} has changed from $${recipientItemPrice.toFixed(2)} to $${itemPrice.toFixed(2)}.`;
+    }
 
     const closeAlertBtn = document.createElement('button');
     closeAlertBtn.type = 'button';
@@ -466,6 +486,10 @@ function renderListItems(recipientItem) {
     itemPriceCol.className = 'col-3 item-price';
     const price = recipientItem.price.toFixed(2);
     itemPriceCol.innerText = `$${price}`; // span
+    let outOfStock = parseFloat(price) === 0;
+    if (outOfStock) {
+        itemPriceCol.innerText = 'Out of Stock';
+    }
 
     // link button
     const linkBtnCol = document.createElement('div');
@@ -492,6 +516,9 @@ function renderListItems(recipientItem) {
         cartBtn.innerHTML = cartIcon;
         cartBtn.type = 'button';
         const remainingBudget = parseFloat(document.getElementById('remaining-budget').children[0].innerText);
+        if (outOfStock) {
+            cartBtn.disabled = true;
+        }
         if (price > remainingBudget) {
             cartBtn.dataset.toggle = 'modal';
             cartBtn.dataset.target = '#overBudgetModal';
@@ -552,7 +579,8 @@ function handleItemBtnClick(e, recipientItem) {
         if (price > remainingBudget) {
             document.getElementById('add-to-budget').addEventListener('click', (e) => {
                 document.getElementById('cancel-add-item').click();
-                updateRecipientBtnClick(e, recipientName, recipientBudget);
+                console.log(recipientBudget)
+                updateRecipientBtnClick(e, recipientItem.recipient.id);
             });
         }
         else{
@@ -650,7 +678,12 @@ function moveToToBuyList(recipientItemId, li, itemPrice, recipientItemPrice) {
         const cartBtn = row.getElementsByClassName('cart-btn')[0];
         cartBtn.innerHTML = cartIcon;
         cartBtn.className = 'btn icon-btn cart-btn fill-cart-btn';
-        cartBtn.type = 'button';   
+        cartBtn.type = 'button';
+        // item out of stock
+        if (parseFloat(itemPrice) === 0) {
+            priceCol.innerText = 'Out of Stock';
+            cartBtn.disabled = true;
+        }   
 
         // add event listener to each icon button
         row.children[2].children[0].addEventListener('click', () => {
@@ -706,12 +739,18 @@ function updateBudgetFromRecipientItem(recipientId, price, changeAmt) {
 }
 
 // handle click of buttons to update or delete recipients
-function updateRecipientBtnClick(e, recipientName, recipientBudget) {
+function updateRecipientBtnClick(e, recipientId) {
     const updateRecipientName = document.getElementById('updateRecipientName');
-    updateRecipientName.value = recipientName;
-
     const updateRecipientBudget = document.getElementById('updateRecipientBudget');
-    updateRecipientBudget.value = recipientBudget;
+    fetch(recipientsURL + '/' + recipientId)
+    .then(res => res.json())
+    .then(recipient => {
+        updateRecipientName.value = recipient.name;
+        updateRecipientBudget.value = recipient.budget.toFixed(2);
+    })
+    
+    // updateRecipientName.value = recipientName;
+    // updateRecipientBudget.value = recipientBudget;
     
 }
 
