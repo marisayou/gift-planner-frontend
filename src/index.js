@@ -358,13 +358,14 @@ function addRecipient(e) {
     .then(res => res.json())
     .then(recipient => {
         addRecipientToList(recipient);
-        if (!firstRecipient) {
-            firstRecipient = recipient;
-            renderListStructures();
-        }
-        else {
-            renderRecipient(recipient.id);
-        }
+        renderListStructures(recipient.id);
+        // if (!firstRecipient) {
+        //     firstRecipient = recipient;
+        //     renderListStructures();
+        // }
+        // else {
+        //     renderRecipient(recipient.id);
+        // }
     });
     
 }
@@ -447,8 +448,10 @@ function renderListItems(recipientId) {
             linkBtnCol.className = 'col-1 icon-col';
             const linkBtn = document.createElement('button');
             linkBtn.className = 'btn icon-btn link-btn';
-            linkBtn.innerHTML = linkIcon;
-            linkBtn.addEventListener('click', handleItemBtnClick);
+            linkBtn.innerHTML = linkIcon
+            linkBtn.addEventListener('click', () => {
+                window.open(recipientItem.item.link)
+            });
             linkBtnCol.appendChild(linkBtn);
 
             // cart button
@@ -541,11 +544,6 @@ function handleItemBtnClick(e) {
             updateBudgetFromRecipientItem(recipientId, price, 'subtract');
         });
     }
-
-    // go to link
-    // else if (btn.classList.contains('link-btn')) {
-
-    // }
 }
 
 // move item from to-buy list to bought list
@@ -576,7 +574,10 @@ function moveToBoughtList(recipientItemId, li, price) {
         cartBtn.removeAttribute('data-target');
 
         // add event listener to each icon button
-        for (let i = 2; i < 5; i++) {
+        row.children[2].children[0].addEventListener('click', () => {
+            window.open(recipientItem.item.link)
+        });
+        for (let i = 3; i < 5; i++) {
             row.children[i].children[0].addEventListener('click', handleItemBtnClick);
         }
         boughtList.appendChild(boughtLi);
@@ -615,7 +616,10 @@ function moveToToBuyList(recipientItemId, li) {
         cartBtn.type = 'button';   
 
         // add event listener to each icon button
-        for (let i = 2; i < 5; i++) {
+        row.children[2].children[0].addEventListener('click', () => {
+            window.open(recipientItem.item.link)
+        });
+        for (let i = 3; i < 5; i++) {
             row.children[i].children[0].addEventListener('click', handleItemBtnClick);
         }
         toBuyList.appendChild(toBuyLi);
