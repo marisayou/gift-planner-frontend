@@ -88,26 +88,11 @@ function getRecipients() {
         else {
             const addRecipient = document.createElement('h1');
             addRecipient.className = 'no-recipients';
-            addRecipient.innerText = 'Add a Recipient!';
+            addRecipient.innerText = 'Welome!';
             recipientInfo.appendChild(addRecipient);
         }
     })
 }
-
-// function updatePrices() {
-//     return fetch(itemsURL)
-//     .then(res => res.json())
-//     .then(items => items.forEach(item => {
-//         const configObj = {
-//             method: 'PATCH',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Accept': 'application/json'
-//             }
-//         }
-//         fetch(itemsURL + '/' + item.id, configObj)
-//     }))
-// }
 
 // render layout for a recipient's lists
 function renderListStructures(recipientId) {
@@ -364,7 +349,7 @@ function addRecipient(e) {
 
     // reset form and close modal
     addRecipientForm.reset();
-    addRecipientModal.querySelector('button.close').click();
+    addRecipientModal.querySelector('button.btn.cancel').click();
 
     // TODO: check that float has max of 2 decimal places
     if (name === "" || budget === "") {
@@ -447,8 +432,7 @@ function getListItems(recipientId) {
             if (!recipientItem.bought && recipientItem.price !== recipientItem.item.price) {
                 alertPriceChange(recipientItem, recipientItem.item.price, recipientItem.price);
 
-                updateRecipientItemPrice(recipientItem)
-                .then(recipientItem => renderListItems(recipientItem));
+                updateRecipientItemPrice(recipientItem);
             }
             else {
                 renderListItems(recipientItem);
@@ -569,8 +553,9 @@ function updateRecipientItemPrice(recipientItem) {
         },
         body: JSON.stringify({ price: recipientItem.item.price })
     }
-    return fetch(recipientItemsURL + '/' + recipientItem.id, configObj)
+    fetch(recipientItemsURL + '/' + recipientItem.id, configObj)
     .then(res => res.json())
+    .then(recipientItem => renderListItems(recipientItem));
 }
 
 // handle button clicks to move or remove list items
@@ -582,6 +567,7 @@ function handleItemBtnClick(e, recipientItem) {
     const recipientItemId = li.id;
     const price = recipientItem.item.price;
     const recipientId = recipientItem.recipient.id;
+    const item = recipientItem.item;
     const recipientName = recipientItem.recipient.name;
     const recipientBudget = recipientItem.recipient.budget;
     
@@ -592,7 +578,6 @@ function handleItemBtnClick(e, recipientItem) {
         if (price > remainingBudget) {
             document.getElementById('add-to-budget').addEventListener('click', (e) => {
                 document.getElementById('cancel-add-item').click();
-                console.log(recipientBudget)
                 updateRecipientBtnClick(e, recipientItem.recipient.id);
             });
         }
@@ -609,7 +594,10 @@ function handleItemBtnClick(e, recipientItem) {
     // remove item from to-buy list
     else if (btn.classList.contains('remove-btn') && list.id === 'to-buy-list') {
         fetch(recipientItemsURL + '/' + recipientItemId, { method: 'DELETE' })
-        .then(li.remove());
+        .then(() => {
+            li.remove();
+            getItem(item);
+        });
     }
 
     // remove item from bought-list
@@ -618,8 +606,19 @@ function handleItemBtnClick(e, recipientItem) {
         .then(() => {
             li.remove();
             updateBudgetFromRecipientItem(recipientId, price, 'subtract');
+            getItem(item);
         });
     }
+}
+
+function getItem(item) {
+    fetch(itemsURL + '/' + item.id)
+    .then(res => res.json())
+    .then(item => {
+        if (item.recipient_items.length === 0) {
+            fetch(itemsURL + '/' + item.id, { method: 'DELETE' });
+        }
+    })
 }
 
 // move item from to-buy list to bought list
@@ -864,7 +863,7 @@ function updateRecipient(e, id) {
     }
     
     // close modal form
-    updateRecipientModal.querySelector('button.close').click();
+    updateRecipientModal.querySelector('button.btn.cancel').click();
 
     const configObj = {
         method: 'PATCH',

@@ -16,7 +16,7 @@ body {
 .list-group-item {
     background-color: #e7cc96;
     
-    color: #5c5c5e;
+    /* color: #5c5c5e; */
 }
 
 button.btn.background-btn {
@@ -57,8 +57,7 @@ button.btn.modal-btn:hover {
 
 /* fonts */
 body {
-    /* font-family: 'Amatic SC'; */
-    font-family: 'Patrick Hand';
+    font-family: 'Dekko';
     font-size: 19px;
 }
 h1 {
@@ -80,22 +79,22 @@ h3{
 }
 
 #remaining-budget {
-    font-family: 'Bilbo';
+    font-family: 'Nothing You Could Do';
     font-size: 30px;
     color: white;
     
 }
 
 .card-title {
-    font-family: 'Bilbo';
+    font-family: 'Nothing You Could Do';
     font-weight: bold;
-    font-size: 30px;
+    font-size: 40px;
     /* color: #5c5c5e; */
     color: white;
 }
 
 button.btn {
-    font-family: 'Patrick Hand';
+    font-family: 'Dekko';
     background-color: white;
     font-size: 20px;
 }
@@ -118,11 +117,17 @@ button.btn {
 
 #recipientsList li {
     text-align: center;
-    font-family: 'Bilbo';
+    font-family: 'Nothing You Could Do';
     font-size: 25px;
-    font-weight: bold;
     padding-top: 5px;
     padding-bottom: 5px;
+}
+
+#recipientsList li:hover {
+    background-color: #c7a35a;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 /* style icon buttons */
