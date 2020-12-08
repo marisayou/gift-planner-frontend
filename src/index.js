@@ -3,6 +3,7 @@ const recipientsURL = 'http://localhost:3000/recipients';
 const recipientItemsURL = 'http://localhost:3000/recipient_items';
 const itemsURL = 'http://localhost:3000/items';
 const searchItemsURL = 'http://localhost:3000/search_items';
+const notesURL = 'http://localhost:3000/notes';
 
 // consts
 const recipientsList = document.getElementById('recipientsList');
@@ -12,18 +13,12 @@ const recipientInfo = document.getElementById('recipient-info');
 // global variables
 let toBuyList;
 let boughtList;
-let firstRecipient; 
+let notesList;
 
 // event handler for adding recipient
 const addRecipientForm = document.getElementById('addRecipientForm');
 addRecipientForm.addEventListener('submit', addRecipient);
-// reset form if modal is closed 
-const cancel = document.getElementsByClassName('cancel');
-for (let i = 0; i < cancel.length; i++) {
-    cancel[i].addEventListener('click', () => {
-        addRecipientForm.reset();
-    });
-}
+
 
 // event handler for updating recipient info
 const updateForm = document.getElementById('updateRecipientForm');
@@ -42,6 +37,18 @@ updateFormCancelBtn.addEventListener('click', () => {
 // event handler for deleting recipient info
 const confirmDeleteRecipient = document.getElementById('confirm-delete-recipient');
 confirmDeleteRecipient.addEventListener('click', deleteRecipient);
+
+// event handler for adding new note
+const newNoteForm = document.getElementById('newNoteForm');
+newNoteForm.addEventListener('submit', addNewNote);
+
+// reset form if modal is closed 
+const cancel = document.getElementsByClassName('cancel');
+for (let i = 0; i < cancel.length; i++) {
+    cancel[i].addEventListener('click', (e) => {
+        e.target.parentElement.parentElement.reset();
+    });
+}
 
 // icons for buttons
 const linkIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-link-45deg" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -65,9 +72,9 @@ const removeIcon = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi 
 </svg>`;
 
 
-// get recipients from db
-// updatePrices().then(getRecipients);
+// get recipients upon page load
 getRecipients();
+
 function getRecipients() {
     recipientsList.innerHTML = '';
     return fetch(recipientsURL)
@@ -76,8 +83,7 @@ function getRecipients() {
         recipients.forEach(recipient => addRecipientToList(recipient));
         
         if (recipients.length > 0) {
-            firstRecipient = recipients[0]
-            renderListStructures();
+            renderListStructures(recipients[0].id);
         }
         else {
             const addRecipient = document.createElement('h1');
@@ -104,7 +110,7 @@ function getRecipients() {
 // }
 
 // render layout for a recipient's lists
-function renderListStructures(recipientId=null) {
+function renderListStructures(recipientId) {
     recipientInfo.innerHTML = `<div class="row">
         <div class="col" id="name-col">
             <h1 id="recipient-name"></h1>
@@ -132,7 +138,7 @@ function renderListStructures(recipientId=null) {
                 <div class="card-body">
                     <h5 class="card-title" style="text-align: center;">Bought</h5>
                     <ul class="list-group" id="bought-list"></ul>
-                    <br>
+                    
                     <p id="total-spent" style="text-align: center;">TOTAL SPENT: $<span></span><p>
                 </div>
             </div>
@@ -144,7 +150,7 @@ function renderListStructures(recipientId=null) {
                     <ul class="list-group" id="notes-list"></ul>
                     <br>
                     <div class="text-center">
-                        <button class="btn card-btn" id="add-note">ADD NOTE</button>
+                        <button class="btn card-btn" id="add-note" data-toggle="modal" data-target="#newNoteModal">ADD NOTE</button>
                     </div>
                 </div>
             </div>
@@ -161,12 +167,8 @@ function renderListStructures(recipientId=null) {
     
     toBuyList = document.getElementById('to-buy-list');
     boughtList = document.getElementById('bought-list');
-    if (!recipientId) {
-        renderRecipient(firstRecipient.id);
-    }
-    else {
-        renderRecipient(recipientId);
-    }
+    notesList = document.getElementById('notes-list');
+    renderRecipient(recipientId);
 
     const toBuyListBtn = document.getElementById('add-to-buy-item');
     toBuyListBtn.addEventListener('click', addItem);
@@ -431,6 +433,7 @@ function renderRecipient(recipientId) {
         });
 
         getListItems(recipient.id);
+        getNotes(recipient.id);
     });
 }
 
@@ -714,6 +717,75 @@ function moveToToBuyList(recipientItemId, li, itemPrice, recipientItemPrice) {
         updateBudgetFromRecipientItem(recipientItem.recipient_id, recipientItemPrice, 'subtract');
 
     });
+}
+
+function addNewNote(e) {
+    e.preventDefault();
+    const recipientId = document.getElementById('recipient-name').dataset.id;
+    const message = document.getElementById('newMessage').value;
+
+    newNoteForm.reset();
+    newNoteForm.querySelector('button.btn.cancel').click();
+
+    if (message === '') {
+        return;
+    }
+
+    const configObj = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            recipient_id: recipientId,
+            message: message
+        })
+    };
+    fetch(notesURL, configObj)
+    .then(() => renderListStructures(recipientId));
+}
+
+function getNotes(recipientId) {
+    fetch(recipientsURL + `/${recipientId}/notes`)
+    .then(res => res.json())
+    .then(notes => {
+        for (const note of notes) {
+            renderNote(note);
+        }
+    })
+}
+
+function renderNote(note) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+    li.id = `note-${note.id}`;
+
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    // note message
+    const messageCol = document.createElement('div');
+    messageCol.className = 'note-message';
+    messageCol.innerText = note.message;
+
+    // remove note button
+    const removeBtnCol = document.createElement('div');
+    removeBtnCol.className = 'note-icon-col icon-col';
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn icon-btn remove-btn';
+    removeBtn.innerHTML = removeIcon;
+    removeBtn.addEventListener('click', () => {
+        fetch(notesURL + '/' + note.id, { method: 'DELETE' })
+        .then(() => {
+            li.remove();
+        });
+    });
+    removeBtnCol.appendChild(removeBtn);
+
+    row.append(messageCol, removeBtnCol);
+    li.appendChild(row);
+    notesList.appendChild(li);
 }
 
 // update budget, remaining budget, and total spend as a result of moving items between lists

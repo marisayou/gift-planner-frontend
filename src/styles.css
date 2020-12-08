@@ -3,17 +3,15 @@
 body {
     margin-left: 50px;
     margin-right: 50px;
-    background-color: #38383a;
+    margin-bottom: 30px;
+    /* background-color: #38383a; */
+    background-image: url("https://img.freepik.com/free-photo/blackboard-texture_1205-375.jpg?size=626&ext=jpg");
+    background-size: cover;
 }
 
 .card {
-    /* border-radius: 0; */
     background-color: #c7a35a;
 }
-
-/* .list-group {
-    border-radius: 0;
-} */
 
 .list-group-item {
     background-color: #e7cc96;
@@ -42,6 +40,9 @@ button.btn.card-btn:hover {
 
 #total-spent {
     color: white;
+    margin-top: 26px;
+    padding-bottom: 0;
+    font-size: 20px;
 }
 
 button.btn.modal-btn {
@@ -96,6 +97,7 @@ h3{
 button.btn {
     font-family: 'Patrick Hand';
     background-color: white;
+    font-size: 20px;
 }
 
 #search-results {
@@ -114,10 +116,29 @@ button.btn {
     filter: brightness(0) invert(1);
 }   
 
+#recipientsList li {
+    text-align: center;
+    font-family: 'Bilbo';
+    font-size: 25px;
+    font-weight: bold;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
 /* style icon buttons */
 .icon-col {
     padding: 0;
     text-align: center;
+}
+
+.note-message {
+    width: 167px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.note-icon-col {
+    width: 28px;
 }
 
 button.icon-btn {
